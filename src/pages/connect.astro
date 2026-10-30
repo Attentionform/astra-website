@@ -1,0 +1,111 @@
+---
+import { toolSummaries } from '../data/tool-summaries';
+import Base from '../layouts/Base.astro';
+import CodeBlock from '../components/CodeBlock.astro';
+import facts from '../data/site-facts.json';
+import { site } from '../site.config';
+
+const { packages: pkg, mcp } = facts;
+const node = pkg['mcp-server'].node ?? pkg.cli.node;
+const cfg = (dir: string) =>
+  JSON.stringify({ mcpServers: { astra: { command: 'npx', args: ['-y', pkg['mcp-server'].name, '--allowed-dir', dir] } } }, null, 2);
+const sdk = `import { DocxParser, OperationEngine } from '${pkg.engine.name}';
+import * as fs from 'node:fs';
+
+const parser = new DocxParser(fs.readFileSync('document.docx'));
+const ast = await parser.getAST();
+const engine = new OperationEngine(ast, parser);
+
+const result = await engine.executeBatch({
+  operations: [
+    { action: 'replace', target: ast.sections[0].nodes[0].id, text: 'Executive Strategic Review (Q4)' },
+    { action: 'insert', type: 'paragraph', anchor: ast.sections[0].nodes[0].id, position: 'after', text: 'Net revenue increased by 28%.' },
+  ],
+});
+
+if (result.success) {
+  fs.writeFileSync('document_updated.docx', parser.rezip()); // validates, then serialises
+} else {
+  console.error(result.errors);
+}`;
+{
+  const served = new Set(mcp.tools.map((t) => t.name));
+  const off = [...served].filter((n) => !(n in toolSummaries)).concat(Object.keys(toolSummaries).filter((n) => !served.has(n)));
+  if (off.length) throw new Error(`connect.astro: tool summaries out of sync with the server: ${off.join(', ')}`);
+}
+const prompt = `You have the ASTra MCP tools. Open the .docx I name with open_document, read it with inspect_document (compact), make changes with execute_batch using node IDs from the inspect output, then save_document. If a call returns an error, read the "remedy" field and fix the operation. Do not retry the same call unchanged.`;
+---
+<Base title="Connect" description="Install ASTra in Claude Desktop, Cursor, Windsurf, Claude Code, any MCP client, the command line, or your own Node code.">
+  <div class="aurora fade-y" style="height:34rem"><i></i><i></i></div>
+  <div class="wrap relative z-10 pt-16">
+    <p class="eyebrow">Connect</p>
+    <h1 class="display mt-3 text-4xl sm:text-6xl">Connect ASTra to <span class="grad-text">your agent.</span></h1>
+    <p class="lede mt-5 max-w-2xl">Nothing to install first: <code>npx</code> fetches the server on demand. You need Node.js {node} or newer, and a folder of .docx files for your agent to work in.</p>
+
+    <div class="mt-12 grid gap-12">
+      <section id="claude-desktop" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">Claude Desktop</h2>
+        <p class="mt-2 text-muted">Add the server to <code>claude_desktop_config.json</code>, then restart Claude. The file is here:</p>
+        <ul class="mt-3 grid gap-1 text-sm text-muted">
+          <li><strong class="text-fg">macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+          <li><strong class="text-fg">Windows:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+          <li><strong class="text-fg">Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
+        </ul>
+        <div class="mt-4"><CodeBlock code={cfg('/path/to/your/documents')} title="claude_desktop_config.json" lang="json" /></div>
+      </section>
+
+      <section id="cursor" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">Cursor and Windsurf</h2>
+        <p class="mt-2 text-muted">Put this in <code>.cursor/mcp.json</code> in your project (Windsurf uses its own MCP settings file with the same shape).</p>
+        <div class="mt-4"><CodeBlock code={cfg('${workspaceFolder}')} title=".cursor/mcp.json" lang="json" /></div>
+      </section>
+
+      <section id="claude-code" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">Claude Code</h2>
+        <div class="mt-4"><CodeBlock code={`claude mcp add astra -- npx -y ${pkg['mcp-server'].name} --allowed-dir "$PWD"`} title="shell" /></div>
+      </section>
+
+      <section id="other" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">Any other MCP client</h2>
+        <p class="mt-2 text-muted">ASTra speaks MCP over stdio. Launch <code>npx -y {pkg['mcp-server'].name} --allowed-dir &lt;folder&gt;</code> as the server command. These are the tools your agent gets:</p>
+        <ul class="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+          {mcp.tools.map((t) => (<li class="text-sm"><code class="text-fg">{t.name}</code><span class="text-muted">: {toolSummaries[t.name]}</span></li>))}
+        </ul>
+      </section>
+
+      <section id="prompt" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">Tell your agent how to use it</h2>
+        <p class="mt-2 text-muted">A short starting prompt. Most clients do not need it, but it helps weaker models stay on the rails.</p>
+        <div class="mt-4"><CodeBlock code={prompt} title="prompt" lang="text" /></div>
+      </section>
+
+      <section id="cli" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">Command line</h2>
+        <p class="mt-2 text-muted">For scripts, CI and quick checks. Add <code>--json</code> for machine-readable output. Exit code 0 is success, 1 is an operational failure, 2 is a usage error.</p>
+        <div class="mt-4"><CodeBlock code={`npx -y ${pkg.cli.name} create report.docx --template report
+npx -y ${pkg.cli.name} inspect report.docx --fidelity compact
+npx -y ${pkg.cli.name} batch report.docx --append "Key milestones for Q4."
+npx -y ${pkg.cli.name} validate report.docx
+npx -y ${pkg.cli.name} export report.docx --format pdf -o report.pdf
+npx -y ${pkg.cli.name} sanitize report.docx clean.docx --client-safe`} title="shell" /></div>
+        <p class="mt-3 text-sm text-muted">Install globally with <code>npm install -g {pkg.cli.name}</code> to get the short <code>astra</code> command.</p>
+      </section>
+
+      <section id="engine" class="scroll-mt-20">
+        <h2 class="text-2xl font-semibold tracking-tight">TypeScript engine</h2>
+        <div class="mt-4"><CodeBlock code={`npm install ${pkg.engine.name}`} title="shell" /></div>
+        <div class="mt-4"><CodeBlock code={sdk} title="typescript" lang="ts" /></div>
+      </section>
+
+      <section class="rounded-lg border border-line bg-raised p-6">
+        <h2 class="text-lg font-semibold">Check that it works</h2>
+        <ol class="mt-3 list-decimal space-y-1 pl-5 text-sm text-muted">
+          <li>Ask your agent: "List the ASTra tools you have."</li>
+          <li>Ask it to open a .docx in your allowed folder and read it back.</li>
+          <li>Ask for a small edit, then open the saved file in Word.</li>
+        </ol>
+        <p class="mt-3 text-sm text-muted">Something wrong? <a class="underline underline-offset-4" href={site.github.issues} rel="noopener">Open an issue</a> with the error text.</p>
+      </section>
+    </div>
+  </div>
+</Base>

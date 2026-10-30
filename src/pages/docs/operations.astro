@@ -1,0 +1,43 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import facts from '../../data/site-facts.json';
+import { operationGroups } from '../../data/operation-summaries';
+
+const served = new Set(facts.operations.actions);
+const listed = new Set(operationGroups.flatMap((g) => Object.keys(g.ops)));
+const off = [...served].filter((n) => !listed.has(n)).concat([...listed].filter((n) => !served.has(n)));
+if (off.length) throw new Error(`docs/operations: operation list out of sync with the engine: ${off.join(', ')}`);
+
+const examples = `[
+  { "action": "replace", "target": "3FC95CAC", "text": "1. Executive Summary (Q4)" },
+  { "action": "insert", "type": "paragraph", "anchor": "3FC95CAC", "position": "after", "text": "New paragraph." },
+  { "action": "style", "target": "3FC95CAC", "bold": true },
+  { "action": "table", "operation": "updateCell", "target": "<tableNodeId>", "rowIndex": 0, "columnIndex": 0, "text": "Cell" },
+  { "action": "comment", "operation": "insert", "target": "3FC95CAC", "text": "Please review." },
+  { "action": "delete", "target": "<nodeId>" }
+]`;
+---
+<Docs title="Operations" description="The typed operations ASTra applies in a batch: content, formatting, tables, charts, images, notes, comments and more." page="/docs/operations">
+  <h1>Operations</h1>
+  <p class="lede">A batch is a list of operations. ASTra supports {facts.operations.count} kinds. Each has an <code>action</code> name, and many have an <code>operation</code> field that picks a variant, such as <code>table</code> with <code>updateCell</code> or <code>deleteRow</code>.</p>
+
+  <h2>What an operation looks like</h2>
+  <p>Operations are plain JSON. Content operations name a node with <code>target</code> (act on this node) or <code>anchor</code> (put something next to this node, with a <code>position</code> of <code>before</code> or <code>after</code>).</p>
+  <div class="block"><CodeBlock code={examples} title="operations" lang="json" /></div>
+  <p>Run <code>astra batch --schema</code> to print a canonical example of the most common operations. The full parameters of every variant are in the schema of the <a href="/docs/mcp-tools#execute_batch"><code>execute_batch</code></a> tool.</p>
+
+  <h2>All {facts.operations.count} operations</h2>
+  {operationGroups.map((g) => (
+    <>
+      <h3>{g.title}</h3>
+      <div class="tbl"><table>
+        <tbody>
+          {Object.entries(g.ops).map(([name, text]) => (<tr><td class="whitespace-nowrap"><code>{name}</code></td><td>{text}</td></tr>))}
+        </tbody>
+      </table></div>
+    </>
+  ))}
+
+  <div class="note"><p><strong>All or nothing.</strong> If any operation in a batch fails, none of the batch is applied. See <a href="/docs/concepts#batches-are-all-or-nothing">Core concepts</a>.</p></div>
+</Docs>

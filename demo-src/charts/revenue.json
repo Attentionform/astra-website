@@ -1,0 +1,2 @@
+{ "chartType": "columnStacked", "title": "Revenue by quarter ($M)", "categories": ["Q4 2025", "Q1 2026", "Q2 2026", "Q3 2026"],
+  "series": [{ "name": "Platform", "values": [6.1, 7.4, 8.9, 10.8], "color": "4F46E5" }, { "name": "Services", "values": [2.2, 2.6, 2.9, 3.4], "color": "0EA5E9" }] }

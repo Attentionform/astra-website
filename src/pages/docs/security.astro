@@ -1,0 +1,42 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import { site } from '../../site.config';
+---
+<Docs title="Security and privacy" description="What ASTra restricts, what it removes from documents, and exactly what leaves your machine." page="/docs/security">
+  <h1>Security and privacy</h1>
+  <p class="lede">ASTra is built to handle documents you did not write, on behalf of tools you do not fully control. This page says what it restricts, what it can remove from a document, and what data goes where.</p>
+
+  <h2>What leaves your machine</h2>
+  <ul>
+    <li><strong>The engine, command-line tool and MCP server run locally and send nothing anywhere.</strong> They contain no analytics or telemetry.</li>
+    <li><strong>Your AI assistant is a separate party.</strong> When an assistant such as Claude Desktop or Cursor calls an ASTra tool, the result (for example the document outline or text) goes to whichever AI model that assistant uses, under that provider's terms. Connect only the folders and documents you are comfortable sharing with that assistant.</li>
+  </ul>
+
+  <h2>Folder boundary</h2>
+  <p>The MCP server reads and writes only inside the folders you give it with <code>--allowed-dir</code> (it can be repeated). Paths are resolved to their real location before use, so <code>../</code> tricks and symbolic links that point outside the allowed folders are refused with <code>E_SANDBOX</code>. Creating a document never overwrites an existing file unless you say so.</p>
+
+  <h2>Hostile documents</h2>
+  <p>A <code>.docx</code> file can be crafted to attack the program that opens it. ASTra defends against the common cases:</p>
+  <ul>
+    <li><strong>Archive tricks.</strong> Documents are processed in memory and never unpacked to disk, so a file with malicious paths cannot write elsewhere. Entry paths that try to escape are rejected.</li>
+    <li><strong>Zip bombs.</strong> By default a document is refused if it expands by more than 100 times or beyond 200 MB. Both limits can be changed with <code>--max-ratio</code> and <code>--max-uncompressed-bytes</code>.</li>
+    <li><strong>XML attacks.</strong> Parts that declare external entities or document types are rejected before parsing.</li>
+    <li><strong>Active content in images.</strong> Scripts and event handlers are stripped from embedded SVG images.</li>
+    <li><strong>Links.</strong> External links are limited to <code>http</code>, <code>https</code>, <code>mailto</code> and <code>ftp</code>; <code>file:</code> links are blocked.</li>
+  </ul>
+  <p>These are protections for a trusted tool handling untrusted files. They are not a substitute for running ASTra with limited operating-system permissions (for example in a container) when you process files from strangers at scale.</p>
+
+  <h2>Removing identifying information</h2>
+  <p><code>astra sanitize</code> (and the <code>sanitize_document</code> tool) removes information that can reveal who wrote a document and how:</p>
+  <ul>
+    <li>Author and last-modified-by names in the properties, comments and revisions.</li>
+    <li>The hidden editing-session identifiers Word stores on text.</li>
+    <li>Comments, and optionally tracked changes (accepted).</li>
+    <li>Camera and location metadata in embedded PNG and JPEG images.</li>
+    <li>With <code>--client-safe</code> or <code>--redact-pii</code>: telephone numbers, email addresses, US social security numbers and credit card numbers in the text. Other personal data, such as names and street addresses, is <strong>not</strong> detected.</li>
+  </ul>
+  <p>Sanitizing lowers what a document reveals; it does not replace reading the final file before you send it.</p>
+
+  <h2>Reporting a vulnerability</h2>
+  <p>Please do not open a public issue. Follow the instructions in <a href={`${site.github.url}/blob/main/SECURITY.md`} rel="noopener">SECURITY.md</a>.</p>
+</Docs>

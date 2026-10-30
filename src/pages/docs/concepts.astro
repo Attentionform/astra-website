@@ -1,0 +1,38 @@
+---
+import Docs from '../../layouts/Docs.astro';
+---
+<Docs title="Core concepts" description="The ideas behind ASTra: sessions, node IDs, the outline, all-or-nothing batches, validated saves and revision history." page="/docs/concepts">
+  <h1>Core concepts</h1>
+  <p class="lede">Six ideas explain how ASTra behaves. Once you know them, every tool and command makes sense.</p>
+
+  <h2>Documents, sessions and saving</h2>
+  <p>A <code>.docx</code> file is a zip archive of XML parts. ASTra reads it entirely in memory and never unpacks it to disk.</p>
+  <p>Through the MCP server you work in a <strong>session</strong>. <code>open_document</code> returns a session ID; every later call uses it. Your edits live in the session until you call <code>save_document</code>, which validates the result and writes the file. <code>close_document</code> ends the session. The server keeps a limited number of open documents and closes idle ones, so reopen a document if a call reports that the session has expired (<code>E_SESSION</code>).</p>
+  <p>The command-line tool has no sessions. Each command opens the file, does its work and, for editing commands, saves the result.</p>
+
+  <h2>Node IDs</h2>
+  <p>Every paragraph, table, cell and image gets an <strong>ID</strong> such as <code>3FC95CAC</code>. You edit by naming the node, not by counting lines or characters, so an edit cannot land in the wrong place just because text above it changed.</p>
+  <ul>
+    <li>Get IDs from <code>inspect</code> (all nodes) or <code>search</code> (nodes that contain some text).</li>
+    <li>IDs can go stale after you reopen or edit a document. Take them from a fresh <code>inspect</code> or <code>search</code>.</li>
+    <li>Nodes you create during a session get IDs that start with <code>_bk_new_</code>, and the batch result lists them in <code>createdNodeIds</code>.</li>
+  </ul>
+
+  <h2>The outline (TOON)</h2>
+  <p>Reading raw Word XML is slow and wasteful, especially for an AI model. ASTra instead gives you a compact table, called <strong>TOON</strong> (Token-Optimized Outline Notation), with one row per node: its ID, style and text.</p>
+  <p>You choose how much detail to read with <code>--fidelity</code>: <code>compact</code> (smallest), <code>standard</code> (the default) or <code>full</code> (everything about a section; it requires a section to be named). You can also read one section at a time, which keeps the amount of text small even for long documents.</p>
+
+  <h2 id="batches-are-all-or-nothing">Batches are all-or-nothing</h2>
+  <p>You change a document by sending a <strong>batch</strong> of typed <a href="/docs/operations">operations</a>. ASTra applies them in order. If any one fails, every earlier operation in the batch is undone and the document is exactly as it was. A single edit is just a batch of one.</p>
+  <p>This is what makes it safe to let an AI agent make several related changes at once: it never leaves a half-finished edit behind.</p>
+
+  <h2>Validation before saving</h2>
+  <p>Before any file is written, ASTra checks every changed XML part against the Office Open XML (ECMA-376) schema. A document that fails is refused with <code>E_VALIDATION</code> and a <code>remedy</code> that says how to fix it, and the original file is left alone. You can run the same check at any time with <code>validate</code>.</p>
+  <p>Validation proves the file is well-formed and schema-valid. It cannot judge whether an edit is the right one, so review important documents.</p>
+
+  <h2 id="revision-history">Revision history</h2>
+  <p>ASTra keeps a revision history in a hidden <code>.astra</code> folder beside the document. The MCP server records a revision every time <code>save_document</code> succeeds. The command-line tool never creates a history on its own: you opt in once with <code>astra history report.docx --init</code>, which records the current file as the starting point.</p><p>With a history in place you can list revisions (<code>history</code>), preview going back (<code>preview-revert</code>), go back (<code>revert</code>) and re-apply what you reverted (<code>redo</code>). A revert is recorded as a new revision, so nothing is erased.</p>
+
+  <h2>Where files can be touched</h2>
+  <p>The MCP server only reads and writes inside the folders you pass with <code>--allowed-dir</code>. A path outside them, including one reached through a symbolic link, is refused with <code>E_SANDBOX</code>. See <a href="/docs/security">Security and privacy</a>.</p>
+</Docs>

@@ -1,0 +1,2 @@
+{ "chartType": "barStacked", "title": "Budget by category ($M)", "categories": ["Plane A", "Plane B", "Plane C"],
+  "series": [{ "name": "Launch", "values": [38, 41, 30], "color": "7C3AED" }, { "name": "Satellites", "values": [52, 55, 40], "color": "06B6D4" }, { "name": "Ground", "values": [12, 9, 6], "color": "F472B6" }] }

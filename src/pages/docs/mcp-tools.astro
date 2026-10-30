@@ -1,0 +1,50 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import facts from '../../data/site-facts.json';
+import { toolSummaries } from '../../data/tool-summaries';
+import { site } from '../../site.config';
+
+const groups: ReadonlyArray<{ title: string; blurb: string; tools: string[] }> = [
+  { title: 'Open, create and save', blurb: 'Every job starts by opening or creating a document and ends by saving it.', tools: ['open_document', 'new_document', 'save_document', 'close_document'] },
+  { title: 'Read', blurb: 'Look at a document without changing it.', tools: ['inspect_document', 'search_content', 'get_stats', 'visual_inspect'] },
+  { title: 'Change', blurb: 'Edit the document in the session. Nothing reaches disk until save_document.', tools: ['execute_batch', 'compose_document', 'import_document', 'normalize_document', 'sanitize_document'] },
+  { title: 'Check and export', blurb: 'Validate the document or write it out in another format.', tools: ['validate_document', 'export_document'] },
+  { title: 'History', blurb: 'Go back to an earlier saved revision and forward again.', tools: ['get_document_history', 'preview_revert', 'revert_document', 'redo_document'] },
+];
+
+// Fail the build if this page and the live server disagree.
+const served = new Set(facts.mcp.tools.map((t) => t.name));
+const listed = new Set(groups.flatMap((g) => g.tools));
+const off = [...served].filter((n) => !listed.has(n)).concat([...listed].filter((n) => !served.has(n)));
+if (off.length) throw new Error(`docs/mcp-tools: grouping out of sync with the server: ${off.join(', ')}`);
+const byName = Object.fromEntries(facts.mcp.tools.map((t) => [t.name, t]));
+---
+<Docs title="MCP tools" description="All the tools the ASTra MCP server gives an AI agent, grouped by job, with their parameters." page="/docs/mcp-tools">
+  <h1>MCP tools</h1>
+  <p class="lede">The ASTra MCP server gives your agent {facts.mcp.count} tools. They are listed here in the order an agent uses them. This page is generated from the running server, so the names and parameters are always current.</p>
+
+  <div class="note"><p><strong>Typical flow:</strong> <code>open_document</code> → <code>inspect_document</code> → <code>search_content</code> (optional) → <code>execute_batch</code> → <code>save_document</code> → <code>close_document</code>. For full examples of inputs and outputs, see the <a href={`${site.github.url}/blob/main/docs/mcp-specification.md`} rel="noopener">MCP Specification</a>.</p></div>
+
+  {groups.map((g) => (
+    <>
+      <h2 id={g.title.toLowerCase().replace(/[^a-z]+/g, '-')}>{g.title}</h2>
+      <p>{g.blurb}</p>
+      {g.tools.map((name) => (
+        <>
+          <h3 id={name}><code>{name}</code></h3>
+          <p>{toolSummaries[name]}</p>
+          {byName[name].params.length > 0 && (
+            <div class="tbl"><table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                {byName[name].params.map((p) => (
+                  <tr><td><code>{p.name}</code></td><td><code>{p.type}</code></td><td>{p.required ? 'Yes' : 'No'}</td><td>{p.description || 'None'}</td></tr>
+                ))}
+              </tbody>
+            </table></div>
+          )}
+        </>
+      ))}
+    </>
+  ))}
+</Docs>

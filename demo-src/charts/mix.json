@@ -1,0 +1,2 @@
+{ "chartType": "doughnut", "title": "Q3 revenue mix", "categories": ["Platform", "Services", "Licences"],
+  "series": [{ "name": "Share", "values": [76, 20, 4] }] }

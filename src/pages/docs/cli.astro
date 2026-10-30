@@ -1,0 +1,39 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import facts from '../../data/site-facts.json';
+import { cliSummaries } from '../../data/cli-summaries';
+import { site } from '../../site.config';
+
+const served = new Set(facts.cli.commands);
+const listed = new Set(Object.keys(cliSummaries));
+const off = [...served].filter((n) => !listed.has(n)).concat([...listed].filter((n) => !served.has(n)));
+if (off.length) throw new Error(`docs/cli: command list out of sync with the CLI: ${off.join(', ')}`);
+const cli = facts.packages.cli.name;
+const usage: Record<string, string> = facts.cli.usage;
+---
+<Docs title="Command line" description="Every astra command with its usage and an example: inspect, validate, batch, export, sanitize, history and more." page="/docs/cli">
+  <h1>Command line</h1>
+  <p class="lede">The <code>astra</code> command-line tool has {facts.cli.count} commands. Run it without installing anything using <code>npx -y {cli}</code>, or install it with <code>npm install -g {cli}</code> to get the short <code>astra</code> command.</p>
+
+  <h2>Things that work for every command</h2>
+  <ul>
+    <li><code>--json</code> prints machine-readable JSON instead of text. Add it when you are scripting.</li>
+    <li><code>--help</code> prints usage for the command. <code>--version</code> prints the version.</li>
+    <li>Commands that write a file refuse to overwrite an existing one unless you pass <code>--force</code>.</li>
+    <li>Exit codes: <code>0</code> success, <code>1</code> the operation failed (file missing or invalid, batch rolled back), <code>2</code> you used the command incorrectly.</li>
+    <li>In a shell pipeline such as <code>astra validate x.docx --json | jq</code>, use <code>set -o pipefail</code> so a failure is not hidden.</li>
+  </ul>
+
+  <h2>Commands</h2>
+  {facts.cli.commands.map((c) => (
+    <>
+      <h3 id={c}><code>{c}</code></h3>
+      <p>{cliSummaries[c].does}</p>
+      <div class="block"><CodeBlock code={usage[c]} title="usage" lang="text" copy={false} wrap /></div>
+      <div class="block"><CodeBlock code={cliSummaries[c].example} title="example" /></div>
+    </>
+  ))}
+
+  <div class="note"><p>Usage lines are copied from the tool's own help, so they are always current. In usage lines, <code>&lt;angle brackets&gt;</code> are required and <code>[square brackets]</code> are optional. For long-form explanations of each option, see the <a href={`${site.github.url}/blob/main/docs/cli-guide.md`} rel="noopener">CLI Guide</a>.</p></div>
+</Docs>

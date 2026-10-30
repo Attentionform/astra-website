@@ -1,0 +1,71 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import facts from '../../data/site-facts.json';
+import { site } from '../../site.config';
+const cli = facts.packages.cli.name;
+const a = `npx -y ${cli}`;
+const ci = `name: Validate Word documents
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate every .docx under docs/
+        run: find docs -name '*.docx' -print0 | xargs -0 -r -n1 npx -y ${cli} validate`;
+const prompt = `You have the ASTra MCP tools. Open the .docx I name with open_document, read it with inspect_document (compact), make changes with execute_batch using node IDs from the inspect output, then save_document. If a call returns an error, read the "remedy" field and fix the operation. Do not retry the same call unchanged.`;
+---
+<Docs title="Recipes" description="Copy-paste ASTra examples: edit by ID, build from Markdown, sanitize before sharing, validate in CI, and brief an AI agent." page="/docs/recipes">
+  <h1>Recipes</h1>
+  <p class="lede">Short, working examples for common jobs. They use the command-line tool; every one has an MCP equivalent in <a href="/docs/mcp-tools">MCP tools</a>.</p>
+
+  <h2>Change a paragraph you found by its text</h2>
+  <p>Search returns the ID of each matching node. Use that ID as the <code>target</code> of an edit.</p>
+  <div class="block"><CodeBlock code={`${a} search report.docx "Draft status"
+# prints:  <ID> <the matching paragraph text>
+
+echo '[{"action":"replace","target":"<ID>","text":"Status: final"}]' | ${a} batch report.docx -`} title="shell" /></div>
+
+  <h2>Add a paragraph to the end without knowing any ID</h2>
+  <div class="block"><CodeBlock code={`${a} batch report.docx --append "Prepared for the board meeting."`} title="shell" /></div>
+
+  <h2>Try an edit without changing the file</h2>
+  <p><code>--dry-run</code> checks the operations and reports the result without writing. <code>--backup</code> keeps a copy before a real edit.</p>
+  <div class="block"><CodeBlock code={`${a} batch report.docx ops.json --dry-run
+${a} batch report.docx ops.json --backup`} title="shell" /></div>
+
+  <h2>Build a document from Markdown</h2>
+  <div class="block"><CodeBlock code={`${a} create spec.docx --template blank --from-md spec.md
+# or convert a file you already have:
+${a} import notes.md -o notes.docx`} title="shell" /></div>
+  <p>Headings, lists, tables, code blocks and equations are converted to native Word content. Dollar signs are treated as math only if you pass <code>--dollar-math</code>, so prices and shell snippets are left alone.</p>
+
+  <h2>Export</h2>
+  <div class="block"><CodeBlock code={`${a} export report.docx --format markdown -o report.md
+${a} export report.docx --format html -o report.html
+${a} export report.docx --format pdf -o report.pdf   # needs LibreOffice`} title="shell" /></div>
+
+  <h2>Remove identifying information before you share a file</h2>
+  <div class="block"><CodeBlock code={`${a} sanitize draft.docx public.docx               # metadata, authors, comments, revision history
+${a} sanitize draft.docx client.docx --client-safe # also redacts emails, phone numbers and similar in the text
+${a} sanitize draft.docx legal.docx --metadata-only # metadata only; keeps comments and tracked changes`} title="shell" /></div>
+  <p>Without <code>--client-safe</code> or <code>--redact-pii</code>, the text of the document is kept as it is, and ASTra prints a warning to say so. Redaction finds common patterns only; always read the result before you send it.</p>
+
+  <h2>Turn on revision history for a document</h2>
+  <div class="block"><CodeBlock code={`${a} history report.docx --init     # record the current file as the starting point
+${a} history report.docx            # list recorded revisions, newest first`} title="shell" /></div>
+  <p>See <a href="/docs/concepts#revision-history">Core concepts</a> for how revisions are recorded, and the <code>preview-revert</code>, <code>revert</code> and <code>redo</code> commands in <a href="/docs/cli">Command line</a>.</p>
+
+  <h2>Fail a CI job when a Word file is invalid</h2>
+  <p><code>validate</code> checks one file per call and exits with code 1 when the file is invalid, so a small loop covers a folder:</p>
+  <div class="block"><CodeBlock code={ci} title=".github/workflows/validate-docs.yml" lang="yaml" /></div>
+
+  <h2>Brief an AI agent</h2>
+  <p>Most MCP clients need no instructions. A short prompt like this helps weaker models stay on track:</p>
+  <div class="block"><CodeBlock code={prompt} title="prompt" lang="text" /></div>
+  <p>Need setup help? See <a href="/connect">Connect</a>, or <a href={site.github.issues} rel="noopener">open an issue</a>.</p>
+</Docs>

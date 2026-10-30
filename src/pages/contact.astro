@@ -1,0 +1,70 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+
+const c = site.contact;
+const channels = [
+  {
+    id: 'email',
+    title: 'Email',
+    body: 'Questions, commercial licenses, trademark requests and security reports.',
+    links: [
+      { label: c.email, href: `mailto:${c.email}` },
+      { label: c.emailAlt, href: `mailto:${c.emailAlt}` },
+    ],
+    note: 'Both reach the same person. The second address is on Proton Mail: use it if you are on Proton and want the message encrypted end to end, or if the first one bounces.',
+  },
+  {
+    id: 'discord',
+    title: 'Discord',
+    body: 'Ask for help, show what you built, and talk to other people using ASTra.',
+    links: [{ label: 'Join the server', href: c.discord }],
+  },
+  {
+    id: 'x',
+    title: 'X',
+    body: 'Release news and short updates.',
+    links: [{ label: c.xHandle, href: c.x }],
+  },
+  {
+    id: 'github',
+    title: 'GitHub',
+    body: 'Bug reports and feature requests go in issues, so others can find the answer later.',
+    links: [{ label: 'Open an issue', href: site.github.issues }],
+  },
+];
+---
+<Base title="Contact" description="How to reach the ASTra team: email, Discord, X and GitHub. Where to send licensing questions and security reports.">
+  <div class="aurora fade-y" style="height:30rem"><i></i><i></i></div>
+  <div class="wrap relative z-10 pt-16">
+    <p class="eyebrow">Contact</p>
+    <h1 class="display mt-3 text-4xl sm:text-6xl">Get in <span class="grad-text">touch.</span></h1>
+    <p class="lede mt-5 max-w-2xl">ASTra is made by a small team. Pick the channel that fits; we read all of them.</p>
+
+    <div class="mt-12 grid gap-6 sm:grid-cols-2">
+      {channels.map((ch) => (
+        <section id={ch.id} class="scroll-mt-20 rounded-2xl border border-line p-6">
+          <h2 class="text-xl font-semibold tracking-tight">{ch.title}</h2>
+          <p class="mt-2 text-sm text-muted">{ch.body}</p>
+          <ul class="mt-4 grid gap-1 text-sm">
+            {ch.links.map((l) => (
+              <li><a href={l.href} class="text-fg underline underline-offset-4" rel={l.href.startsWith('http') ? 'noopener' : undefined}>{l.label}</a></li>
+            ))}
+          </ul>
+          {ch.note && <p class="mt-3 text-xs text-subtle">{ch.note}</p>}
+        </section>
+      ))}
+    </div>
+
+    <section class="mt-12 max-w-3xl pb-8">
+      <h2 class="text-2xl font-semibold tracking-tight">Which channel for what</h2>
+      <ul class="mt-4 grid gap-3 text-muted">
+        <li><strong class="text-fg">Commercial license.</strong> Email {c.email}. The <a class="text-fg underline underline-offset-4" href={`${site.github.url}/blob/main/LICENSING.md`} rel="noopener">plain-language licensing page</a> says who needs one.</li>
+        <li><strong class="text-fg">Security problem.</strong> Do not post it in public. Use the private report on GitHub (the repository's Security tab) or email {c.email}. See the <a class="text-fg underline underline-offset-4" href={`${site.github.url}/blob/main/SECURITY.md`} rel="noopener">security policy</a>.</li>
+        <li><strong class="text-fg">Bug or missing feature.</strong> Open a GitHub issue with the smallest file or command that shows it.</li>
+        <li><strong class="text-fg">Quick question or show and tell.</strong> Discord.</li>
+        <li><strong class="text-fg">Do not send real documents.</strong> If a bug needs a file, make a small test file with no personal or confidential content.</li>
+      </ul>
+    </section>
+  </div>
+</Base>

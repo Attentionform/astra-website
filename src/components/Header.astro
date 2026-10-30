@@ -1,0 +1,42 @@
+---
+import Mark from './Mark.astro';
+import { nav } from '../nav';
+import { site } from '../site.config';
+import { routePath } from '../lib/route';
+const current = routePath(Astro.url.pathname);
+---
+<header class="sticky top-0 z-50 border-b border-line bg-bg/60 backdrop-blur-xl">
+  <div class="wrap flex h-16 items-center justify-between gap-4">
+    <a href="/" class="flex items-center gap-2.5 text-fg no-underline" aria-label="ASTra by Attentionform, home">
+      <Mark size={28} />
+      <span class="text-[1.1rem] font-bold tracking-tight">ASTra</span>
+      <span class="hidden text-xs text-subtle sm:inline">by Attentionform</span>
+    </a>
+
+    <nav aria-label="Primary" class="hidden items-center gap-1 lg:flex">
+      {nav.map((n) => (
+        <a
+          href={n.href}
+          aria-current={current === n.href ? 'page' : undefined}
+          class="rounded-lg px-3 py-1.5 text-sm text-muted no-underline transition-colors hover:text-fg aria-[current=page]:text-fg"
+        >{n.label}</a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a href={site.github.url} class="btn hidden !min-h-9 !rounded-lg !px-3 !text-sm sm:inline-flex" rel="noopener">GitHub</a>
+      <a href="/connect" class="btn btn-primary !min-h-9 !rounded-lg !px-4 !text-sm">Connect your agent</a>
+      <details class="relative lg:hidden">
+        <summary class="btn !min-h-9 !rounded-lg !px-2.5 list-none" aria-label="Menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </summary>
+        <div class="absolute right-0 mt-2 w-56 rounded-xl border border-line-strong bg-[#0c0d1a] p-2 shadow-2xl">
+          {nav.map((n) => (
+            <a href={n.href} class="block rounded-lg px-3 py-2 text-sm text-fg no-underline hover:bg-white/5">{n.label}</a>
+          ))}
+          <a href={site.github.url} class="block rounded-lg px-3 py-2 text-sm text-fg no-underline hover:bg-white/5" rel="noopener">GitHub</a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://attentionform.com/sitemap-index.xml

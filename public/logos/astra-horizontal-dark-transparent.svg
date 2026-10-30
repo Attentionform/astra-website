@@ -1,0 +1,15 @@
+<svg viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="gdt" gradientUnits="userSpaceOnUse" x1="460" y1="180" x2="830" y2="395">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#8C8C92"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(36,163) scale(0.78) translate(-453,-174)" fill="none" stroke="url(#gdt)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M830 197 L592 358 C560 378 500 380 475 340 C450 290 480 190 610 184 C700 182 760 230 765 300 C768 360 720 386 650 385"/>
+    <circle cx="650" cy="319" r="66"/>
+  </g>
+  <text x="455" y="272" font-size="124" font-weight="800" letter-spacing="-2" fill="#F4F4F5">ASTra</text>
+  <text x="466" y="325" font-size="27" letter-spacing="4.5" fill="#9A9AA2">BY ATTENTIONFORM</text>
+  <text x="466" y="365" font-size="16" letter-spacing="2" fill="#6B6B72">HEADLESS OOXML DOCUMENT ENGINE</text>
+</svg>

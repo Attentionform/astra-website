@@ -1,0 +1,23 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import { docsPages } from '../../docs-nav';
+---
+<Docs title="Documentation" description="Guides and reference for the ASTra MCP server, command-line tool and engine." page="/docs">
+  <h1>Documentation</h1>
+  <p class="lede">ASTra reads, edits and validates Word (<code>.docx</code>) files for AI agents and scripts. The three main parts are the <strong>MCP server</strong>, the <strong>command-line tool</strong> and the <strong>engine</strong> library. They share one engine, so they behave the same way.</p>
+
+  <h2>Start here</h2>
+  <ul>
+    <li>New to ASTra? Follow the <a href="/docs/quickstart">Quickstart</a>, then read <a href="/docs/concepts">Core concepts</a>.</li>
+    <li>Connecting an AI assistant? See <a href="/connect">Connect</a> for copy-paste setup for each client.</li>
+    <li>Looking something up? Use <a href="/docs/mcp-tools">MCP tools</a>, <a href="/docs/operations">Operations</a>, <a href="/docs/cli">Command line</a> or <a href="/docs/errors">Errors</a>.</li>
+  </ul>
+
+  <h2>All pages</h2>
+  <div class="tbl"><table>
+    <tbody>
+      {docsPages.map((p) => (<tr><td class="whitespace-nowrap"><a href={p.href}>{p.label}</a></td><td>{p.blurb}</td></tr>))}
+    </tbody>
+  </table></div>
+
+</Docs>

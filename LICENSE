@@ -1,0 +1,52 @@
+MIT License
+
+Copyright (c) 2026 Attentionform, operated by the holder of the GitHub account
+github.com/Userfrom1995 and also identified by the GitHub organization
+github.com/Attentionform and the domain attentionform.com, together with its
+successors and assigns.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the source code of this website and associated documentation files (the
+"Software"), to deal in the Software without restriction, including without
+limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom
+the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-----------------------------------------------------------------------------
+
+What this license does not cover
+
+The permission above is for the source code of the website: the Astro, React,
+TypeScript, CSS and script files, and the configuration files. It does not
+cover the following, which remain the property of Attentionform, all rights
+reserved. You may not copy, publish or use them without written permission.
+
+1. Names and marks. The names "ASTra" and "Attentionform", and the ASTra and
+   Attentionform logos, icons and wordmarks: public/logos, public/og and the
+   artwork drawn by brand/generate-package.cjs. Truthful references to the
+   project (for example "works with ASTra") are fine, as described in
+   https://github.com/Attentionform/astra/blob/main/TRADEMARKS.md
+
+2. Site content. The written text of the pages, the images, and the sample
+   documents and recorded sessions used for the demo and the gallery:
+   public/demo, public/showcase, demo-src, showcase-src and
+   src/data/demo-session.json.
+
+If you build a site from this code, replace the items above with your own.
+
+Third-party packages (for example Astro, React, Tailwind CSS and the Inter and
+JetBrains Mono fonts) are not part of this repository and keep their own
+licenses.
+
+Questions or requests: astra@attentionform.com

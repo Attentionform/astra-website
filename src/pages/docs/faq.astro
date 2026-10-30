@@ -1,0 +1,33 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import facts from '../../data/site-facts.json';
+import { site } from '../../site.config';
+const node = facts.packages.cli.node?.replace('>=', '') ?? '22.19';
+const qa: ReadonlyArray<[string, string]> = [
+  ['Do I need Microsoft Word installed?', 'No. ASTra reads and writes .docx files itself. LibreOffice is only needed for PDF export and for rendering pages to images.'],
+  ['Which files does it work with?', 'Word .docx files. It does not handle the older .doc format.'],
+  ['Will Word open the files ASTra saves?', 'That is what validation is for. Before saving, ASTra checks the document against the Office Open XML schema and refuses to write one that fails. Validation cannot guarantee that an edit is the right edit, so open and review important documents.'],
+  ['What is the difference between the MCP server, the command-line tool and the engine?', 'They are three ways into the same engine. Use the MCP server to let an AI assistant work on documents, the command-line tool for terminals, scripts and CI, and the engine library to build editing into your own Node.js program.'],
+  ['Which AI assistants work with it?', 'Any client that supports MCP servers over stdio, including Claude Desktop, Claude Code, Cursor and Windsurf. See Connect for setup.'],
+  ['Does my document get sent anywhere?', 'ASTra itself sends nothing. But an AI assistant you connect it to will send what the tools return to its own model provider. See Security and privacy for the details.'],
+  [`What do I need to run it?`, `Node.js ${node} or newer. Run it with npx; nothing else has to be installed first.`],
+  ['Can I undo a change?', 'Yes. A failed batch changes nothing. For earlier saves, ASTra keeps an opt-in revision history: the MCP server records one on every save, and the command-line tool starts one when you run astra history FILE --init. You can then preview a revert, revert and redo.'],
+  ['Is it free?', 'For many users, yes. ASTra is source-available under the Business Source License 1.1; it is not open source. Production use is free for individuals (including freelancers and consultants), schools and academic research, non-profits, public bodies and small businesses (under USD 1,000,000 revenue and fewer than 10 people). Trying it out is always free. Other production use needs a commercial license, and your documents are yours either way. Each version becomes Apache-2.0 four years after it is first made public. See the LICENSING page in the repository for the details.'],
+  ['Can I make videos, stream, review or teach with it?', 'Yes. Recording a tutorial, running a live stream, writing a review or teaching a course is fine, and it does not matter whether you earn money from it. Individuals are free whatever they earn, and demonstrating the software is free for everyone. Hosting ASTra as a service for others, or reselling it, always needs a commercial license.'],
+  ['Can I build an open-source project on it?', 'Yes, if your project has substantial functionality of its own. Your own code can be under any license, such as MIT or Apache-2.0, and you list ASTra as a dependency. People who use your project use ASTra only as part of it, which is covered when you are an individual or a small business, even if your project is free of charge. A company at or above the small-business limits needs a commercial license for its own production use of ASTra, and the people who use a project published by such a company need their own right to use ASTra. A thin wrapper whose value is mainly ASTra itself is a competing offering and needs one too.'],
+  ['Is it ready for production?', 'The engine, command-line tool and MCP server are well tested, but the project is young: package versions are 0.x, so interfaces can still change.'],
+  ['Is ASTra affiliated with Microsoft?', 'No. ASTra is an independent project. Microsoft Word is a trademark of Microsoft.'],
+  ['I found a bug. What should I do?', 'Open an issue with the command or tool call you ran and the full error text.'],
+];
+---
+<Docs title="FAQ" description="Short answers to common questions about ASTra: requirements, privacy, safety, undo, licensing and status." page="/docs/faq">
+  <h1>FAQ</h1>
+  <p class="lede">Short answers to the questions we hear most.</p>
+  {qa.map(([q, a]) => (
+    <>
+      <h2 class="!mt-8 !text-lg">{q}</h2>
+      <p>{a}</p>
+    </>
+  ))}
+  <p class="!mt-8">More questions? <a href={site.github.issues} rel="noopener">Open an issue</a>.</p>
+</Docs>

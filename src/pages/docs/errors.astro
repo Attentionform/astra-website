@@ -1,0 +1,40 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+const rows: ReadonlyArray<[string, string, string]> = [
+  ['E_VALIDATION', 'A batch or parameter was invalid, a node ID was not found, or saving would produce a document that fails the Word schema. The message says which, and nothing was written.', 'Read the remedy. Re-run inspect or search to get current node IDs, correct the operation, and try again.'],
+  ['E_SANDBOX', 'The path is outside the folders you allowed with --allowed-dir (including through a symbolic link).', 'Move the document into an allowed folder, or start the server with the right --allowed-dir.'],
+  ['E_SESSION', 'The session ID is unknown or has expired.', 'Call open_document again to start a new session.'],
+  ['E_CONFLICT', 'The target file already exists, or you asked to revert while the session has unsaved edits.', 'Pass force: true to overwrite, or discardUnsaved: true to discard unsaved edits. Edits that cancel out still count as unsaved.'],
+  ['E_DEPENDENCY', 'A tool ASTra needs is missing, usually LibreOffice for PDF export or page images.', 'Install LibreOffice and make sure it is on your PATH.'],
+  ['E_QUOTA', 'A batch is larger than the limit, or a document\'s history has reached its size or revision limit.', 'Split the batch into smaller batches.'],
+  ['E_IO', 'A file could not be read or written, or the history folder is not a normal one.', 'Check permissions and free disk space.'],
+  ['E_NOT_FOUND', 'The thing you asked for does not exist, for example reverting further back than the recorded history goes.', 'Check the history with astra history, then retry with a smaller --steps.'],
+];
+const sample = `{
+  "ok": false,
+  "code": "E_VALIDATION",
+  "message": "Node DOESNOTEXIST not found in AST.",
+  "remedy": "Re-inspect ids via inspect (or search to locate text) and retry.",
+  "isError": true
+}`;
+---
+<Docs title="Errors" description="What each ASTra error code means and how to fix it." page="/docs/errors">
+  <h1>Errors</h1>
+  <p class="lede">Every ASTra error has a stable code, a message that says what went wrong, and a <code>remedy</code> that says what to do next. An AI agent can read the remedy and recover without help.</p>
+
+  <h2>What an error looks like</h2>
+  <p>Through the MCP server, errors are returned as JSON:</p>
+  <div class="block"><CodeBlock code={sample} title="example (shortened)" lang="json" copy={false} /></div>
+  <p>On the command line, the same information is printed as <code>astra: error: [CODE] message. Remedy: ...</code> and the exit code is <code>1</code> (the operation failed) or <code>2</code> (the command was used incorrectly).</p>
+
+  <h2>Error codes</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Code</th><th>What it means</th><th>What to do</th></tr></thead>
+    <tbody>
+      {rows.map(([c, m, f]) => (<tr><td class="whitespace-nowrap"><code>{c}</code></td><td>{m}</td><td>{f}</td></tr>))}
+    </tbody>
+  </table></div>
+
+  <div class="note"><p>When an error says <em>Nothing was written</em>, you can safely retry: the file is exactly as it was before the failed call.</p></div>
+</Docs>

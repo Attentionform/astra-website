@@ -1,0 +1,2 @@
+{ "chartType": "scatter", "title": "Outlet temperature against load", "categories": ["1","2","3","4","5","6"],
+  "series": [{ "name": "Adaptive", "xValues": [2, 4, 6, 8, 10, 12], "values": [37, 38, 40, 41, 43, 44], "color": "0EA5E9" }] }

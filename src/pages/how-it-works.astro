@@ -1,0 +1,265 @@
+---
+import Base from '../layouts/Base.astro';
+import CodeBlock from '../components/CodeBlock.astro';
+import demo from '../data/demo-session.json';
+import facts from '../data/site-facts.json';
+import { toolSummaries } from '../data/tool-summaries';
+
+// Every sample below is read from the recorded session in src/data/demo-session.json,
+// so the page shows what the server really answered, not a mock-up.
+const step = (i: number) => demo.steps[i] as any;
+const rows = demo.readCost.toonSample.split('\n').slice(0, 8);
+const cut = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+
+const refusal = step(10).response;
+const rollback = step(13);
+const batchCode = JSON.stringify(rollback.args.operations, null, 2);
+const refusalCode = JSON.stringify({ ok: refusal.ok, code: refusal.code, message: cut(refusal.message, 150), remedy: refusal.remedy }, null, 2);
+
+const historyTools = ['get_document_history', 'preview_revert', 'revert_document', 'redo_document'];
+const maxOps = 500;
+
+const stages = [
+  { id: 'read', n: '01', name: 'Read', head: 'Rows, not XML.', tool: 'inspect_document' },
+  { id: 'edit', n: '02', name: 'Edit', head: 'All or nothing.', tool: 'execute_batch' },
+  { id: 'save', n: '03', name: 'Save', head: 'Checked before it counts.', tool: 'save_document' },
+  { id: 'history', n: '04', name: 'Undo', head: 'Every save is a revision.', tool: 'revert_document' },
+  { id: 'safety', n: '05', name: 'Contain', head: 'Only the folder you allow.', tool: '--allowed-dir' },
+  { id: 'see', n: '06', name: 'See', head: 'It checks its own pages.', tool: 'visual_inspect' },
+];
+---
+<Base
+  title="How it works"
+  description="What happens between your agent's request and a saved Word document: compact reading, all-or-nothing batches, a validator that blocks broken files, revision history and a folder sandbox."
+>
+  <div class="aurora fade-y" style="height:38rem"><i></i><i></i><i></i></div>
+  <div class="grid-bg" style="height:40rem"></div>
+
+  <section class="wrap relative z-10 pt-20 text-center">
+    <p class="eyebrow reveal">How it works</p>
+    <h1 class="display reveal mx-auto mt-4 max-w-4xl text-5xl sm:text-7xl" style="--d:.08s">
+      Why an agent can <span class="grad-text">trust it</span> with your document.
+    </h1>
+    <p class="lede reveal mx-auto mt-6 max-w-2xl" style="--d:.16s">
+      Six things happen between "change this" and a saved file. Each one is a guarantee, and each one below is shown with what the server really answered.
+    </p>
+    <ol class="reveal mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2" style="--d:.24s" aria-label="The six stages">
+      {stages.map((s) => (
+        <li><a href={`#${s.id}`} class="chip no-underline transition-colors hover:border-cyan hover:text-cyan"><span class="text-subtle">{s.n}</span> {s.name}</a></li>
+      ))}
+    </ol>
+  </section>
+
+  <div class="wrap relative z-10 mt-24">
+    <div class="rail">
+
+      <!-- 01 Read -->
+      <section id="read" class="stage scroll-mt-24">
+        <div class="stage-copy">
+          <p class="eyebrow">01 · Read</p>
+          <h2 class="display mt-3 text-3xl sm:text-5xl">Your agent reads <span class="grad-text">rows, not XML.</span></h2>
+          <p class="mt-5 text-muted">A Word file is a bundle of XML parts. Handing that to a model wastes its attention. <code>inspect_document</code> returns the document as compact rows: a stable node ID, the style, and the text. The agent can see structure at a glance and address any paragraph, table or chart by its ID.</p>
+          <p class="mt-4 text-muted">Need to find something first? <code>search_content</code> returns the IDs of the nodes that contain it.</p>
+        </div>
+        <div class="stage-art reveal-scale">
+          <div class="glass glass-glow overflow-hidden p-0">
+            <div class="flex items-center gap-2 border-b border-line px-4 py-2.5 font-mono text-xs text-subtle"><span class="pulse-dot inline-block h-2 w-2 rounded-full bg-pass"></span> inspect_document</div>
+            <pre class="m-0 overflow-x-auto p-4 text-[0.7rem] leading-relaxed text-muted">{rows.map((r, i) => (<div class="row" style={`--i:${i}`}>{cut(r, 104)}</div>))}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 Edit -->
+      <section id="edit" class="stage scroll-mt-24">
+        <div class="stage-copy">
+          <p class="eyebrow">02 · Edit</p>
+          <h2 class="display mt-3 text-3xl sm:text-5xl">A batch is <span class="grad-text">all or nothing.</span></h2>
+          <p class="mt-5 text-muted">Edits are typed operations, up to {maxOps} in one <code>execute_batch</code> call. If any one of them fails, the whole batch is undone and the document is exactly as it was. The agent never has to untangle a half-applied edit.</p>
+          <p class="mt-4 text-muted">In the recorded session, the third operation targeted a node that does not exist. The server refused it, left the revision unchanged, and said how to fix it.</p>
+        </div>
+        <div class="stage-art reveal-scale">
+          <div class="atomic" aria-hidden="true">
+            <div class="op op1"><b>1</b> updateCell <i>t_002</i></div>
+            <div class="op op2"><b>2</b> style <i>2A8D004A</i></div>
+            <div class="op op3"><b>3</b> replace <i>DEADBEEF</i><span class="x">✕ not found</span></div>
+            <div class="verdict"><span>rolled back</span> revision unchanged</div>
+          </div>
+          <div class="mt-4"><CodeBlock code={batchCode} title="the batch, as sent" lang="json" /></div>
+          <p class="mt-3 font-mono text-xs text-refuse">{cut(rollback.response.message, 90)}</p>
+        </div>
+      </section>
+
+      <!-- 03 Save -->
+      <section id="save" class="stage scroll-mt-24">
+        <div class="stage-copy">
+          <p class="eyebrow">03 · Save</p>
+          <h2 class="display mt-3 text-3xl sm:text-5xl">A broken file <span class="grad-text">never reaches the disk.</span></h2>
+          <p class="mt-5 text-muted">Edits go into a working copy. <code>save_document</code> validates the whole package against the Word schema first. If something is wrong, nothing is written, and the error says where and what to do next.</p>
+          <p class="mt-4 text-muted">In the recorded session the agent set a colour to <code>not-a-color</code>. The edit was accepted into the working copy, the save was refused, and the file on disk was byte-for-byte the same afterwards (the same hash, <code class="text-fg">{demo.document.hashBefore}</code>, before and after). The agent fixed the colour from the remedy and the next save succeeded.</p>
+        </div>
+        <div class="stage-art reveal-scale">
+          <div class="gate" aria-hidden="true">
+            <div class="doc bad"><i></i><i></i><i></i></div>
+            <div class="beam"><span>validate</span></div>
+            <div class="out refuse">refused · nothing written</div>
+            <div class="doc good"><i></i><i></i><i></i></div>
+            <div class="beam"><span>validate</span></div>
+            <div class="out pass">saved · revision recorded</div>
+          </div>
+          <div class="mt-4"><CodeBlock code={refusalCode} title="save_document, refused" lang="json" /></div>
+        </div>
+      </section>
+
+      <!-- 04 History -->
+      <section id="history" class="stage scroll-mt-24">
+        <div class="stage-copy">
+          <p class="eyebrow">04 · Undo</p>
+          <h2 class="display mt-3 text-3xl sm:text-5xl">Every save is a revision. <span class="grad-text">Go back to any.</span></h2>
+          <p class="mt-5 text-muted">History works like version control. You can list the saved revisions, preview what a revert would change, restore an earlier one, and re-apply it if you change your mind. A revert is itself a new revision, so nothing is ever lost by undoing.</p>
+        </div>
+        <div class="stage-art reveal-scale">
+          <div class="timeline" aria-hidden="true">
+            <div class="track"></div>
+            <div class="rev r1"><i></i><span>rev 1</span></div>
+            <div class="rev r2"><i></i><span>rev 2</span></div>
+            <div class="rev r3"><i></i><span>rev 3</span></div>
+            <div class="rev r4"><i></i><span>rev 4 · restored from 2</span></div>
+          </div>
+          <ul class="mt-5 grid gap-2 sm:grid-cols-2">
+            {historyTools.map((t) => (
+              <li class="glass rounded-xl p-4"><p class="font-mono text-xs text-[#ddd6fe]">{t}</p><p class="mt-1 text-sm text-muted">{toolSummaries[t]}</p></li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <!-- 05 Safety -->
+      <section id="safety" class="stage scroll-mt-24">
+        <div class="stage-copy">
+          <p class="eyebrow">05 · Contain</p>
+          <h2 class="display mt-3 text-3xl sm:text-5xl">It works in <span class="grad-text">the folder you allow,</span> and nowhere else.</h2>
+          <p class="mt-5 text-muted">You start the server with <code>--allowed-dir</code>. Reads and writes are limited to the folders you list, so an agent cannot wander into the rest of your disk.</p>
+          <p class="mt-4 text-muted">Before a document leaves your hands, <code>sanitize_document</code> strips authors, comments, tracked revisions, metadata and personal data.</p>
+        </div>
+        <div class="stage-art reveal-scale">
+          <div class="sandbox" aria-hidden="true">
+            <div class="fence"><span>your folder</span>
+              <div class="file f1">report.docx</div>
+              <div class="file f2">memo.docx</div>
+            </div>
+            <div class="intruder">../private.docx<span>✕ outside the allowed folder</span></div>
+          </div>
+          <div class="mt-4"><CodeBlock code={`npx -y ${facts.packages['mcp-server'].name} --allowed-dir ./documents`} title="shell" wrap /></div>
+        </div>
+      </section>
+
+      <!-- 06 See -->
+      <section id="see" class="stage scroll-mt-24">
+        <div class="stage-copy">
+          <p class="eyebrow">06 · See</p>
+          <h2 class="display mt-3 text-3xl sm:text-5xl">The agent <span class="grad-text">looks at its own pages.</span></h2>
+          <p class="mt-5 text-muted"><code>visual_inspect</code> renders pages and returns them as images. A model that can see the result catches a table that spills or a heading orphaned at the bottom of a page, before you do. The pages in the gallery on the home page were built and rendered this way.</p>
+        </div>
+        <div class="stage-art reveal-scale">
+          <div class="pages" aria-hidden="false">
+            {['/demo/report-p1.webp', '/demo/report-p2.webp', '/demo/report-p3.webp'].map((src, i) => (
+              <figure class="pg" style={`--i:${i}`}>
+                <img src={src} alt={`Rendered page ${i + 1} of the recorded board report`} width="1240" height="1605" loading="lazy" decoding="async" />
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="relative isolate mt-28 overflow-hidden py-24 text-center">
+    <div class="aurora" style="opacity:.8"><i></i><i></i></div>
+    <div class="wrap relative z-10">
+      <h2 class="display reveal mx-auto max-w-3xl text-4xl sm:text-6xl">Give your agent a <span class="grad-text">Word engine it can trust.</span></h2>
+      <p class="lede reveal mx-auto mt-5 max-w-xl" style="--d:.1s">One line to start. Your documents stay in your folder.</p>
+      <div class="reveal mt-8 flex flex-wrap justify-center gap-3" style="--d:.18s">
+        <a class="btn btn-primary" href="/connect">Connect your agent</a>
+        <a class="btn" href="/#gallery">See the gallery</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Vertical rail: a line that runs down the left of the stages on wide screens */
+  .rail { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 7rem; }
+  @media (min-width: 1024px) {
+    .rail::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: linear-gradient(transparent, var(--line-strong) 8%, var(--line-strong) 92%, transparent); }
+  }
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; align-items: center; }
+  .stage > * { min-width: 0; }
+  @media (min-width: 1024px) {
+    .stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5rem; }
+    .stage:nth-child(even) .stage-copy { order: 2; }
+  }
+  .stage-copy code, .stage-art code { color: #ddd6fe; }
+
+  /* 01 rows land one after another */
+  .row { opacity: 0; animation: rise .5s calc(var(--i) * 110ms + 300ms) both; white-space: pre; }
+  .row:nth-child(1) { color: var(--cyan); }
+
+  /* 02 atomic batch: ops tick in, the third fails, the first two slide back */
+  .atomic { position: relative; display: grid; gap: .6rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: rgb(255 255 255 / .03); }
+  .op { display: flex; align-items: center; gap: .6rem; padding: .65rem .9rem; border-radius: .7rem; border: 1px solid rgb(52 224 161 / .35); background: rgb(52 224 161 / .06); font-family: var(--font-mono); font-size: .78rem; color: var(--fg); }
+  .op b { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: rgb(52 224 161 / .2); color: var(--pass); font-size: .7rem; }
+  .op i { color: var(--fg-muted); font-style: normal; }
+  .op .x { margin-left: auto; color: var(--refuse); }
+  .op3 { border-color: rgb(255 122 89 / .5); background: rgb(255 122 89 / .08); }
+  .op3 b { background: rgb(255 122 89 / .2); color: var(--refuse); }
+  .op1 { animation: opin 8s infinite; }
+  .op2 { animation: opin 8s .5s infinite; }
+  .op3 { animation: opfail 8s 1s infinite; }
+  .op1 { --back: 1; }
+  @keyframes opin { 0% { opacity: 0; transform: translateX(-14px); } 8%, 52% { opacity: 1; transform: none; } 66%, 100% { opacity: .35; transform: translateX(0); filter: grayscale(1); } 94% { opacity: 0; } }
+  @keyframes opfail { 0% { opacity: 0; transform: translateX(-14px); } 8%, 40% { opacity: 1; transform: none; } 48% { transform: translateX(6px); } 54% { transform: translateX(-6px); } 60%, 100% { opacity: 1; transform: none; } 94% { opacity: 0; } }
+  .verdict { margin-top: .2rem; font-family: var(--font-mono); font-size: .75rem; color: var(--fg-muted); opacity: 0; animation: verdict 8s 1.2s infinite; }
+  .verdict span { margin-right: .5rem; padding: .1rem .5rem; border-radius: .4rem; background: rgb(255 255 255 / .08); color: var(--fg); }
+  @keyframes verdict { 0%, 45% { opacity: 0; } 55%, 90% { opacity: 1; } 100% { opacity: 0; } }
+
+  /* 03 validation gate */
+  .gate { display: grid; grid-template-columns: 4.5rem 1fr 11rem; align-items: center; gap: .6rem 1rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: rgb(255 255 255 / .03); }
+  .doc { height: 5.5rem; padding: .7rem .6rem; border-radius: .4rem; background: #fff; display: grid; gap: .45rem; align-content: start; }
+  .doc i { display: block; height: .4rem; border-radius: 2px; background: #d4d4d8; }
+  .doc i:nth-child(2) { width: 80%; }
+  .doc i:nth-child(3) { width: 55%; }
+  .doc.bad i:nth-child(2) { background: var(--refuse); }
+  .beam { position: relative; height: 1px; background: linear-gradient(90deg, var(--line-strong), var(--cyan), var(--line-strong)); }
+  .beam::after { content: ''; position: absolute; top: -3px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 14px var(--cyan); animation: travel 3.2s ease-in-out infinite; }
+  .beam span { position: absolute; left: 50%; top: -1.4rem; transform: translateX(-50%); font-family: var(--font-mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-subtle); }
+  @keyframes travel { 0% { left: 0; opacity: 0; } 12%, 88% { opacity: 1; } 100% { left: calc(100% - 7px); opacity: 0; } }
+  .out { padding: .5rem .7rem; border-radius: .6rem; font-family: var(--font-mono); font-size: .72rem; border: 1px solid; }
+  .out.refuse { color: var(--refuse); border-color: rgb(255 122 89 / .5); background: rgb(255 122 89 / .08); }
+  .out.pass { color: var(--pass); border-color: rgb(52 224 161 / .5); background: rgb(52 224 161 / .08); }
+  @media (max-width: 520px) { .gate { grid-template-columns: 3.5rem 1fr 7.5rem; } .out { font-size: .62rem; } }
+
+  /* 04 timeline */
+  .timeline { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 2.2rem 1rem 2.6rem; border: 1px solid var(--line); border-radius: 1rem; background: rgb(255 255 255 / .03); }
+  .track { position: absolute; left: 2rem; right: 2rem; top: 2.8rem; height: 2px; background: var(--line-strong); }
+  .track::after { content: ''; position: absolute; inset: 0; width: 0; background: var(--grad); animation: fill 7s ease-in-out infinite; }
+  @keyframes fill { 0% { width: 0; } 70%, 92% { width: 100%; } 100% { width: 100%; opacity: 0; } }
+  .rev { position: relative; z-index: 1; display: grid; justify-items: center; gap: .6rem; width: 4.5rem; font-family: var(--font-mono); font-size: .62rem; color: var(--fg-muted); text-align: center; }
+  .rev i { width: .8rem; height: .8rem; border-radius: 50%; background: var(--bg); border: 2px solid var(--violet); }
+  .rev.r4 i { border-color: var(--cyan); box-shadow: 0 0 16px var(--cyan); }
+  .rev.r4 { color: var(--fg); }
+
+  /* 05 sandbox */
+  .sandbox { position: relative; display: grid; gap: 1.2rem; padding: 1.5rem; border: 1px solid var(--line); border-radius: 1rem; background: rgb(255 255 255 / .03); }
+  .fence { position: relative; display: flex; gap: .7rem; padding: 2rem 1rem 1rem; border: 2px dashed rgb(167 139 250 / .6); border-radius: 1rem; }
+  .fence > span { position: absolute; left: 1rem; top: .5rem; font-family: var(--font-mono); font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: #ddd6fe; }
+  .file { padding: .5rem .8rem; border-radius: .5rem; background: rgb(255 255 255 / .07); font-family: var(--font-mono); font-size: .75rem; }
+  .intruder { justify-self: start; display: flex; align-items: center; gap: .7rem; padding: .5rem .8rem; border-radius: .5rem; border: 1px solid rgb(255 122 89 / .5); background: rgb(255 122 89 / .08); font-family: var(--font-mono); font-size: .75rem; color: var(--refuse); animation: knock 5s ease-in-out infinite; }
+  .intruder span { color: var(--fg-muted); font-size: .68rem; }
+  @keyframes knock { 0%, 20% { transform: translateY(0); } 38% { transform: translateY(-1.1rem); } 48%, 100% { transform: translateY(0); } }
+
+  /* 06 pages */
+  .pages { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; perspective: 1200px; }
+  .pg { margin: 0; overflow: hidden; border-radius: .35rem; background: #fff; box-shadow: 0 30px 70px -25px rgb(0 0 0 / .9), 0 0 0 1px rgb(255 255 255 / .06); transform: rotateY(calc((var(--i) - 1) * -9deg)) translateZ(0); transition: transform .5s ease; }
+  .pg:hover { transform: rotateY(0) translateY(-6px); }
+  .pg img { display: block; width: 100%; height: auto; }
+</style>

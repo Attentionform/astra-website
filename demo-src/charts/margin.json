@@ -1,0 +1,2 @@
+{ "chartType": "line", "title": "Operating margin (%)", "categories": ["Q4 2025", "Q1 2026", "Q2 2026", "Q3 2026"],
+  "series": [{ "name": "Operating margin", "values": [14.2, 16.8, 18.3, 21.4], "color": "059669" }] }

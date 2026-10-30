@@ -1,0 +1,22 @@
+{
+  "meridian": {
+    "title": "Meridian Orbital: Constellation Launch Brief",
+    "pages": 4,
+    "valid": true
+  },
+  "northwind": {
+    "title": "Adaptive Cooling for Dense Compute",
+    "pages": 3,
+    "valid": true
+  },
+  "hale": {
+    "title": "Master Services Agreement",
+    "pages": 1,
+    "valid": true
+  },
+  "atlas": {
+    "title": "Atlas Robotics: Q3 2026 Board Report",
+    "pages": 4,
+    "valid": true
+  }
+}

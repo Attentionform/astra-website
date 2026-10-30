@@ -1,0 +1,57 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../site.config';
+import { routePath } from '../lib/route';
+
+interface Props { title: string; description: string; ogImage?: string }
+const { title, description, ogImage = '/og/default.png' } = Astro.props;
+const route = routePath(Astro.url.pathname);
+const canonical = new URL(route, site.url).href;
+const fullTitle = route === '/' ? title : `${title} · ${site.name}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/logos/astra-icon-dark.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logos/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/logos/apple-touch-icon-180x180.png" />
+    <meta name="theme-color" content="#05060d" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ASTra by Attentionform" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(ogImage, site.url).href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <noscript><style>.reveal,.reveal-scale{opacity:1;transform:none}</style></noscript>
+    <slot name="head" />
+  </head>
+  <body class="noise">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-fg focus:px-3 focus:py-2 focus:text-bg">Skip to content</a>
+    <Header />
+    <main id="main"><slot /></main>
+    <Footer />
+  <script>
+      // Reveal-on-scroll. Elements start hidden only when this script runs, so the page still reads without it.
+      const els = document.querySelectorAll('.reveal, .reveal-scale, [data-inview]');
+      if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        els.forEach((e) => e.classList.add('is-in'));
+      } else {
+        const io = new IntersectionObserver((entries) => {
+          for (const en of entries) {
+            if (en.isIntersecting) en.target.classList.add('is-in');
+            else if (en.target.hasAttribute('data-inview')) en.target.classList.remove('is-in');
+          }
+        }, { rootMargin: '0px 0px -12% 0px', threshold: 0.12 });
+        els.forEach((e) => io.observe(e));
+      }
+    </script>
+  </body>
+</html>

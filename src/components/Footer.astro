@@ -1,0 +1,44 @@
+---
+import { footerProduct } from '../nav';
+import { site } from '../site.config';
+---
+<footer class="relative mt-8"><div class="hairline"></div>
+  <div class="wrap grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="max-w-xs">
+      <a href="/" aria-label="ASTra by Attentionform, home"><img src="/logos/astra-wordmark-dark.svg" alt="ASTra by Attentionform" width="231" height="56" class="h-14 w-auto" /></a>
+      <p class="mt-3 text-sm text-muted">The Word engine built for AI agents. Made by <a href={site.brandUrl} class="text-fg underline underline-offset-4" rel="noopener">Attentionform</a>.</p>
+    </div>
+    {footerProduct.length > 0 && (
+      <div>
+        <h2 class="eyebrow">Product</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          {footerProduct.map((l) => (<li><a class="text-muted no-underline hover:text-fg" href={l.href}>{l.label}</a></li>))}
+        </ul>
+      </div>
+    )}
+    <div>
+      <h2 class="eyebrow">Project</h2>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a class="text-muted no-underline hover:text-fg" href={site.github.url} rel="noopener">GitHub</a></li>
+        <li><a class="text-muted no-underline hover:text-fg" href={site.github.releases} rel="noopener">Releases</a></li>
+        <li><a class="text-muted no-underline hover:text-fg" href={site.github.issues} rel="noopener">Report an issue</a></li>
+        <li><a class="text-muted no-underline hover:text-fg" href={`${site.github.url}/blob/main/LICENSE`} rel="noopener">License (BSL 1.1)</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="eyebrow">Contact</h2>
+      <ul class="mt-3 space-y-2 text-sm">
+        <li><a class="text-muted no-underline hover:text-fg" href="/contact">Contact page</a></li>
+        <li><a class="text-muted no-underline hover:text-fg" href={`mailto:${site.contact.email}`}>{site.contact.email}</a></li>
+        <li><a class="text-muted no-underline hover:text-fg" href={site.contact.discord} rel="noopener">Discord</a></li>
+        <li><a class="text-muted no-underline hover:text-fg" href={site.contact.x} rel="noopener">X ({site.contact.xHandle})</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="wrap flex flex-wrap items-center justify-between gap-2 py-5 text-xs text-subtle">
+      <span>© {site.year} {site.brand}. Source-available under the Business Source License 1.1.</span>
+      <span>Microsoft Word is a trademark of Microsoft. ASTra is an independent project.</span>
+    </div>
+  </div>
+</footer>

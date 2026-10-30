@@ -1,0 +1,111 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import facts from '../../data/site-facts.json';
+const cli = facts.packages.cli.name;
+const a = `npx -y ${cli}`;
+const landscape = `[{ "action": "pageSetup", "orientation": "landscape" }]`;
+const a4 = `[{ "action": "pageSetup", "paperSize": "A4", "orientation": "portrait", "marginLeft": 1080, "marginRight": 1080 }]`;
+const oneSection = `[{ "action": "pageSetup", "sectionIndex": 2, "orientation": "landscape" }]`;
+const sections = `[
+  { "action": "insert", "type": "paragraph", "anchor": "end", "position": "after", "text": "Cover page", "id": "cover" },
+  { "action": "insert", "type": "sectionBreak", "anchor": "cover", "position": "after", "breakType": "nextPage" },
+  { "action": "insert", "type": "paragraph", "anchor": "end", "position": "after", "text": "Wide table section", "id": "wide" }
+]`;
+const headers = `[
+  { "action": "headerFooter", "operation": "set", "targetType": "header", "sectionIndex": 1, "text": "Quarterly report" },
+  { "action": "headerFooter", "operation": "set", "targetType": "footer", "sectionIndex": 3, "text": "Page {PAGE} of {NUMPAGES}" }
+]`;
+const columns = `[
+  { "action": "section", "operation": "setColumns", "sectionIndex": 3, "columns": 2, "separator": true },
+  { "action": "pageBorder", "sectionIndex": 1, "style": "double", "sz": 12, "color": "1F4E79" }
+]`;
+const lists = `[
+  { "action": "insert", "type": "paragraph", "anchor": "end", "position": "after", "text": "Prepare", "id": "s1" },
+  { "action": "insert", "type": "paragraph", "anchor": "s1", "position": "after", "text": "Check", "id": "s2" },
+  { "action": "insert", "type": "paragraph", "anchor": "s2", "position": "after", "text": "Ship", "id": "s3" },
+  { "action": "list", "operation": "create", "target": "s1", "listType": "numbered" },
+  { "action": "list", "operation": "continue", "target": "s2", "previousNodeId": "s1", "level": 2 },
+  { "action": "list", "operation": "continue", "target": "s3", "previousNodeId": "s2", "level": 1 }
+]`;
+const del = `[{ "action": "delete", "target": "<ID of the break paragraph>" }]`;
+const run = `${a} create report.docx --template blank --force
+${a} batch report.docx build.json --out report.docx --force    # insert and list operations
+${a} batch report.docx layout.json --out report.docx --force   # header, footer, page setup, columns, border
+${a} validate report.docx
+${a} visual report.docx --page 2 --out page2.png`;
+---
+<Docs title="Page layout" description="How to set orientation and paper size, split a document into sections, give each section its own header and footer, add columns and borders, and build multi-level lists with ASTra." page="/docs/page-layout">
+  <h1>Page layout</h1>
+  <p class="lede">Orientation and paper size, separate sections, a different header or footer for each section, columns, page borders and multi-level lists. Every example is a list of operations: save it as <code>ops.json</code> and run it with <code>batch</code>, or pass it as <code>operations</code> to <code>execute_batch</code> in the MCP server, or to <code>executeBatch</code> in the library. All three give the same file.</p>
+
+  <h2>Concepts</h2>
+  <ul>
+    <li><strong>A section is a run of pages with its own page setup.</strong> Orientation, paper size, margins, columns, border, header and footer belong to a section, not to the whole file.</li>
+    <li><strong>A section break ends a section.</strong> In the file it is a property of the last paragraph of that section.</li>
+    <li><strong>Sections are numbered from 1</strong>, in reading order, wherever an operation takes <code>sectionIndex</code>. For <code>pageSetup</code>, leaving it out applies the change to every section.</li>
+    <li><strong>Sections are read from the file.</strong> If an edit adds, deletes or moves a break, ASTra rebuilds its section list from the file, so it always agrees with what Word shows.</li>
+    <li><strong>Node IDs last for one session.</strong> An ID you give a new paragraph works for the rest of that batch. In a later command, read IDs again with <code>inspect</code> or <code>search</code>.</li>
+  </ul>
+
+  <h2>Orientation and paper size</h2>
+  <p>Landscape for the whole document:</p>
+  <div class="block"><CodeBlock code={landscape} title="json" /></div>
+  <p>A4, portrait, with narrower side margins. Margins are in twentieths of a point; 1440 is one inch.</p>
+  <div class="block"><CodeBlock code={a4} title="json" /></div>
+  <p><code>paperSize</code> is <code>A4</code>, <code>Letter</code>, <code>Legal</code> or <code>A3</code>. Landscape swaps the page width and height and keeps the margins. One section only:</p>
+  <div class="block"><CodeBlock code={oneSection} title="json" /></div>
+
+  <h2>Sections</h2>
+  <p>Insert a break after a paragraph. <code>breakType</code> is <code>nextPage</code> or <code>continuous</code>. <code>anchor: "end"</code> adds to the end of the document. Set each section's page setup after you create it, with <code>sectionIndex</code>.</p>
+  <div class="block"><CodeBlock code={sections} title="json" /></div>
+
+  <h2>Headers and footers</h2>
+  <div class="block"><CodeBlock code={headers} title="json" /></div>
+  <ul>
+    <li><code>{'{PAGE}'}</code> is the current page and <code>{'{NUMPAGES}'}</code> the total. They are stored as real Word fields, so they update in Word.</li>
+    <li>A section without its own header or footer shows the one from the section before it, as in Word. Above, sections 2 and 3 show “Quarterly report”, and only section 3 has the footer.</li>
+    <li>To give a section no header of its own again, use <code>"operation": "remove"</code> with the same <code>targetType</code> and <code>sectionIndex</code>.</li>
+  </ul>
+
+  <h2>Columns and page borders</h2>
+  <div class="block"><CodeBlock code={columns} title="json" /></div>
+  <p><code>spacing</code> is the gap between columns (default 720, half an inch). <code>pageBorder</code> takes <code>style</code> (<code>single</code>, <code>double</code>, <code>dashed</code>, <code>triple</code>), <code>sz</code> in eighths of a point, <code>color</code> as hex without <code>#</code>, and <code>marginOffset</code> (<code>page</code> or <code>text</code>).</p>
+
+  <h2>Lists</h2>
+  <p>Make a paragraph a list item with <code>list</code> / <code>create</code>, and add items with <code>continue</code> at a <code>level</code> from 1 (top) to 9. This produces <code>1. Prepare</code>, <code>a. Check</code>, <code>2. Ship</code>.</p>
+  <div class="block"><CodeBlock code={lists} title="json" /></div>
+  <ul>
+    <li><strong>Bullets</strong> use a different mark at each level (• ◦ ▪ and so on) down to level 9.</li>
+    <li><strong>Numbers</strong> run 1. a. i. and repeat that pattern through nine levels.</li>
+    <li><code>changeLevel</code> moves an item with <code>"level": 3</code> or <code>"delta": 1</code>. Level 0 takes it out of the list, and so does <code>remove</code>.</li>
+  </ul>
+
+  <h2>Deleting a section break</h2>
+  <p>Delete the break paragraph by its ID. It is the last paragraph of its section, so in the output of <code>inspect</code> it is the usually empty row just before the next section starts.</p>
+  <div class="block"><CodeBlock code={del} title="json" /></div>
+  <ul>
+    <li>The two sections merge. <strong>The text before the deleted break takes the page setup of the section after it</strong>, as in Word. A landscape section merged into a portrait one turns portrait.</li>
+    <li>The deleted section’s header and footer are <strong>removed from the file</strong>, not only hidden: their text, relationships and pictures used only by them are gone. A header that something else still uses is kept.</li>
+    <li>ASTra prints a warning saying how many sections the document had and now has.</li>
+    <li>If a later operation in the same batch fails, the whole batch is undone and the file is not written.</li>
+    <li>A delete with an ID that does not exist is not an error: it is listed under <code>skippedIds</code> and <code>appliedCount</code> is <code>0</code>. Check <code>appliedCount</code> in scripts.</li>
+  </ul>
+
+  <h2>Putting it together</h2>
+  <p>The second batch needs the sections the first one creates, which is why they are two files.</p>
+  <div class="block"><CodeBlock code={run} title="shell" /></div>
+
+  <h2>Known limits</h2>
+  <ul>
+    <li><code>.docx</code> only.</li>
+    <li>Checked automatically with the Open XML SDK and LibreOffice, not with Word. Fifteen sample documents covering sections, headers and footers, lists, a chart and other content were also opened by hand in desktop Word and opened without a repair prompt; the chart stayed editable. Equations and comments were not confirmed separately.</li>
+    <li>PDF export and page images need LibreOffice and Poppler installed.</li>
+    <li>Version 0.x: interfaces may change before 1.0. Node.js 22.19 or later.</li>
+    <li>Node IDs last for one session; read them again after you reopen a file.</li>
+    <li>A batch takes at most 500 operations and 200 MB of document data; over that it stops with <code>E_QUOTA</code>.</li>
+    <li>Deleting a section break merges the sections, and the text takes the next section’s page setup.</li>
+    <li>Landscape swaps width and height and keeps the margins; change margins separately.</li>
+    <li>Revision history is off until you turn it on (<code>history &lt;file&gt; --init</code>).</li>
+  </ul>
+</Docs>

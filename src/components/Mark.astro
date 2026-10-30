@@ -1,0 +1,10 @@
+---
+interface Props { size?: number; class?: string }
+const { size = 28, class: cls = '' } = Astro.props;
+---
+<svg viewBox="0 0 512 512" width={size} height={size} class={cls} role="img" aria-label="ASTra mark" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(256, 256) scale(1.15) translate(-645, -286)" fill="none" stroke="currentColor" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M830 197 L592 358 C560 378 500 380 475 340 C450 290 480 190 610 184 C700 182 760 230 765 300 C768 360 720 386 650 385" />
+    <circle cx="650" cy="319" r="66" />
+  </g>
+</svg>

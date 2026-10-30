@@ -1,0 +1,304 @@
+---
+import Base from '../layouts/Base.astro';
+import CodeBlock from '../components/CodeBlock.astro';
+import CopyButton from '../components/CopyButton';
+import Demo from '../components/Demo';
+import HeroStage from '../components/fx/HeroStage';
+import Pillars from '../components/fx/Pillars';
+import Flow from '../components/fx/Flow';
+import Gallery from '../components/fx/Gallery';
+import facts from '../data/site-facts.json';
+import session from '../data/demo-session.json';
+import { site } from '../site.config';
+
+const { packages: pkg } = facts;
+const startCmd = `npx -y ${pkg['mcp-server'].name} --allowed-dir ./docs`;
+const rows = session.readCost.toonSample.split('\n').slice(0, 10).map((l) => (l.length > 74 ? l.slice(0, 71) + '…' : l));
+
+const mcpConfig = JSON.stringify(
+  { mcpServers: { astra: { command: 'npx', args: ['-y', pkg['mcp-server'].name, '--allowed-dir', '/path/to/your/documents'] } } },
+  null,
+  2,
+);
+const sdkCode = `import { DocxParser, OperationEngine } from '${pkg.engine.name}';
+
+const parser = new DocxParser(fs.readFileSync('report.docx'));
+const ast = await parser.getAST();
+const engine = new OperationEngine(ast, parser);
+
+const result = await engine.executeBatch({
+  operations: [{ action: 'replace', target: ast.sections[0].nodes[0].id, text: 'New title' }],
+});
+if (result.success) fs.writeFileSync('report.docx', parser.rezip());`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'ASTra',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: `Node.js ${pkg['mcp-server'].node}`,
+  description: 'The Word engine built for AI agents. Read, edit, validate and undo changes to .docx files through typed operations. MCP server, CLI and TypeScript engine.',
+  license: 'https://spdx.org/licenses/BUSL-1.1.html',
+  softwareVersion: pkg['mcp-server'].version,
+  url: site.url,
+  codeRepository: site.github.url,
+  publisher: { '@type': 'Organization', name: site.brand, url: site.brandUrl },
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
+
+const icons: Record<string, string> = {
+  layers: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/>',
+  table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
+  pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>',
+  book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>',
+  layout: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>',
+  palette: '<circle cx="13.5" cy="6.5" r="1"/><circle cx="17.5" cy="10.5" r="1"/><circle cx="8.5" cy="7.5" r="1"/><circle cx="6.5" cy="12.5" r="1"/><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.2 0-1.1.9-2 2-2h2.3a4 4 0 0 0 4-4C21 6 17 2 12 2Z"/>',
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+  export: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
+  undo: '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
+};
+const features = [
+  { icon: 'chat', title: 'Review in the margin', line: 'Comments and threaded replies anchored to the exact paragraph, from any reviewer you name.' },
+  { icon: 'book', title: 'Footnotes that connect', line: 'Footnotes, endnotes, bookmarks and hyperlinks, all wired up so they work the moment the file opens.' },
+  { icon: 'layout', title: 'Print-ready layout', line: 'Cover pages, headers and footers, watermarks, page borders, sections and page setup.' },
+  { icon: 'palette', title: 'Your brand, by default', line: 'Drop in a style guide once. Every table, callout and chart follows your palette.' },
+  { icon: 'eye', title: 'It can see the page', line: 'Pages render back to the agent as images, so it checks its own layout before you ever do.' },
+  { icon: 'shield', title: 'Scrub before you share', line: 'Strip authors, comments, revisions, hidden metadata and personal data in a single pass.' },
+  { icon: 'export', title: 'Every format out', line: 'Send the same document out as PDF, HTML or Markdown without leaving the pipeline.' },
+  { icon: 'undo', title: 'Undo that goes deep', line: 'Browse history, preview a revert, restore any revision, redo it. Nothing is ever overwritten.' },
+];
+const marquee = ['Atomic batches', 'Git-style history', 'Sandboxed folders', 'Validated saves', 'Native charts', 'Tracked changes', 'Source-available'];
+---
+<Base
+  title="ASTra: the Word engine built for AI agents"
+  description="Let your AI agent read, edit, validate and undo Word documents with exact, typed operations. Atomic batches, git-style history, sandboxed folders and validated saves. MCP server, CLI and TypeScript engine."
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <!-- Hero -->
+  <section class="relative isolate overflow-hidden">
+    <div class="aurora"><i></i><i></i><i></i></div>
+    <div class="grid-bg"></div>
+    <div class="wrap relative z-10 pt-16 text-center sm:pt-24">
+      <a href="#demo" class="reveal inline-flex items-center gap-2 rounded-full border border-line-strong bg-white/5 px-4 py-1.5 text-xs text-muted no-underline backdrop-blur hover:text-fg">
+        <span class="pulse-dot h-1.5 w-1.5 rounded-full bg-pass"></span> The Word engine built for AI agents <span aria-hidden="true">→</span>
+      </a>
+      <h1 class="display reveal mt-7 text-[2.9rem] sm:text-7xl lg:text-[5.6rem]" style="--d:.08s">Your agent finally<br /><span class="grad-text">speaks Word.</span></h1>
+      <p class="lede reveal mx-auto mt-7 max-w-2xl" style="--d:.16s">ASTra lets any AI agent read a .docx as clean structure, change it with exact operations, and save only files that pass schema validation. No XML. No guesswork. No half-finished edits.</p>
+      <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-3" style="--d:.24s">
+        <a class="btn btn-primary" href="/connect">Connect your agent</a>
+        <a class="btn" href="#demo">Watch it work</a>
+      </div>
+      <div class="reveal mx-auto mt-6 flex max-w-xl items-center justify-between gap-3 rounded-xl border border-line bg-black/40 px-4 py-2.5 text-left backdrop-blur" style="--d:.3s">
+        <code class="min-w-0 truncate text-[0.78rem] text-[#ddd6fe]"><span class="text-subtle select-none">$ </span>{startCmd}</code>
+        <CopyButton client:visible text={startCmd} />
+      </div>
+    </div>
+    <div class="wrap relative z-10 mt-14 pb-20 sm:mt-16">
+      <div class="reveal-scale" style="--d:.15s"><HeroStage client:load /></div>
+    </div>
+    <div class="relative z-10 overflow-hidden border-y border-line bg-black/30 py-4" aria-hidden="true">
+      <div class="flex w-max gap-12 whitespace-nowrap font-mono text-xs uppercase tracking-[0.18em] text-subtle" style="animation: marquee 38s linear infinite">
+        {[0, 1].map(() => marquee.map((m) => (<span class="flex items-center gap-12">{m}<i class="h-1 w-1 rounded-full bg-violet"></i></span>)))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Stakes -->
+  <section class="wrap pt-28">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">The problem nobody warned you about</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">Your agent is brilliant.<br /><span class="text-muted">Your Word files are not ready for it.</span></h2>
+      <p class="lede reveal mt-6" style="--d:.16s">A .docx is a zipped pile of XML. Give a model that raw, and one stray tag quietly ruins the file. You find out when the client opens it.</p>
+    </div>
+    <div class="mt-14 grid gap-6 md:grid-cols-2">
+      <div class="reveal relative overflow-hidden rounded-2xl border border-refuse/30 bg-[#0d0605] p-6">
+        <p class="eyebrow !text-refuse">Raw XML</p>
+        <pre class="mt-4 overflow-hidden text-[0.72rem] leading-relaxed text-subtle"><code>{`<w:tbl><w:tr><w:tc><w:p>
+  <w:r><w:t>Revenue</w:t></w:r>
+</w:p>`}<span class="bg-refuse/25 text-refuse" style="animation:blink 1.4s steps(2) infinite">{`   <!-- </w:tc> never closed -->`}</span>{`
+<w:tc><w:p><w:r><w:t>$14.2M`}</code></pre>
+        <div class="mt-5 inline-flex items-center gap-2 rounded-lg border border-refuse/50 bg-refuse/10 px-3 py-1.5 font-mono text-xs text-refuse"><span>✕</span> This file can’t be opened.</div>
+        <p class="mt-4 text-sm text-muted">One missing tag. No warning. A broken deliverable.</p>
+      </div>
+      <div class="reveal relative overflow-hidden rounded-2xl border border-pass/30 bg-[#04100c] p-6" style="--d:.12s">
+        <p class="eyebrow !text-pass">With ASTra</p>
+        <pre class="mt-4 overflow-hidden text-[0.72rem] leading-relaxed text-muted"><code>{`table:6x4   t_002   "Metric | Q3 2025 | Q3 2026"
+row  r1c1   Revenue   $10.6M   `}<span class="text-pass">{`$14.2M`}</span>{`
+update  t_002  row 1  col 2   → `}<span class="text-pass">valid</span></code></pre>
+        <div class="mt-5 inline-flex items-center gap-2 rounded-lg border border-pass/50 bg-pass/10 px-3 py-1.5 font-mono text-xs text-pass"><span>✓</span> Checked before it counts.</div>
+        <p class="mt-4 text-sm text-muted">The agent changes a cell by its ID. The package stays sound, or nothing is written.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agent view -->
+  <section class="wrap pt-28">
+    <p class="eyebrow reveal text-center">Agent-first, from the first line</p>
+    <h2 class="display reveal mx-auto mt-4 max-w-4xl text-center text-4xl sm:text-6xl" style="--d:.08s">A person sees a page.<br /><span class="grad-text">Your agent sees structure.</span></h2>
+    <div class="mt-14 grid items-center gap-6 lg:grid-cols-[1fr_auto_1.15fr]">
+      <figure class="reveal">
+        <div class="paper-shadow relative mx-auto max-w-xs overflow-hidden rounded-lg bg-white">
+          <img src="/showcase/atlas-p2.webp" alt="A rendered report page" width="1240" height="1605" loading="lazy" class="block w-full" />
+          <div class="absolute inset-x-0 h-20 bg-gradient-to-b from-transparent via-cyan/45 to-transparent" style="animation: scan 4.5s linear infinite"></div>
+        </div>
+        <figcaption class="mt-4 text-center text-sm text-muted">What a person reads.</figcaption>
+      </figure>
+      <div class="hidden text-3xl text-violet lg:block" aria-hidden="true" style="animation: float 4s ease-in-out infinite">→</div>
+      <figure class="reveal" style="--d:.12s">
+        <div class="glass overflow-hidden p-5">
+          <pre class="overflow-x-auto text-[0.7rem] leading-relaxed text-muted sm:text-[0.74rem]">{rows.map((r, i) => (<div style={`animation: rise .6s ${i * 110}ms both`} class={i > 1 ? 'hover:text-fg' : ''}>{r}</div>))}</pre>
+        </div>
+        <figcaption class="mt-4 text-center text-sm text-muted">What your agent reads. Every row has an ID it can act on.</figcaption>
+      </figure>
+    </div>
+    <ul class="mx-auto mt-12 grid max-w-4xl gap-4 text-center sm:grid-cols-3">
+      <li class="reveal"><p class="font-semibold text-fg">Stable IDs</p><p class="mt-1 text-sm text-muted">Every paragraph, table and chart has a handle the agent can aim at.</p></li>
+      <li class="reveal" style="--d:.1s"><p class="font-semibold text-fg">No markup to read</p><p class="mt-1 text-sm text-muted">The XML stays out of the model’s way, and out of its context.</p></li>
+      <li class="reveal" style="--d:.2s"><p class="font-semibold text-fg">Exact targeting</p><p class="mt-1 text-sm text-muted">Change one cell, one word or one chart without touching anything else.</p></li>
+    </ul>
+  </section>
+
+  <!-- Promises -->
+  <section id="promises" class="wrap scroll-mt-20 pt-32">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">Four promises</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">Built so you can <span class="grad-text">trust it</span> with the real thing.</h2>
+    </div>
+    <div class="mt-14"><Pillars client:visible /></div>
+  </section>
+
+  <!-- Flow -->
+  <section id="flow" class="wrap scroll-mt-20 pt-32">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">How it works</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">From one sentence to a <span class="grad-text">finished document.</span></h2>
+    </div>
+    <div class="mt-14"><Flow client:visible /></div>
+  </section>
+
+  <!-- Gallery -->
+  <section id="gallery" class="wrap scroll-mt-20 pt-32">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">The output</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">Documents that look like <span class="grad-text">a person made them.</span></h2>
+      <p class="lede reveal mt-6" style="--d:.16s">Every page below was built by an agent through ASTra, then rendered straight from the saved file.</p>
+    </div>
+    <div class="mt-14"><Gallery client:visible /></div>
+  </section>
+
+  <!-- Demo -->
+  <section id="demo" class="wrap scroll-mt-20 pt-32">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">See it work</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">Real calls. Real answers. <span class="grad-text">Even the refusals.</span></h2>
+      <p class="lede reveal mt-6" style="--d:.16s">This is a recording of an agent talking to the ASTra server. Nothing here is mocked.</p>
+    </div>
+    <div class="mt-12"><Demo client:visible /></div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="wrap scroll-mt-20 pt-32">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">Everything Word can do</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">And now your agent <span class="grad-text">can do it too.</span></h2>
+    </div>
+    <div class="mt-14 grid gap-4 lg:grid-cols-4">
+      <article class="glass glass-glow reveal group overflow-hidden lg:col-span-2">
+        <div class="p-6 pb-0">
+          <p class="eyebrow">Charts</p>
+          <h3 class="mt-2 text-xl font-bold tracking-tight">Charts that are really charts</h3>
+          <p class="mt-2 max-w-md text-sm text-muted">Column, bar, line, area, pie, doughnut, scatter, combo and 3D. Native to Word, still editable there.</p>
+        </div>
+        <div class="mt-5 overflow-hidden px-6"><img src="/showcase/crop-chart.webp" alt="A stacked column chart inside a report" width="2000" height="960" loading="lazy" class="w-full rounded-t-lg bg-white transition-transform duration-700 group-hover:scale-[1.03]" /></div>
+      </article>
+      <article class="glass glass-glow reveal group overflow-hidden lg:col-span-2" style="--d:.08s">
+        <div class="p-6 pb-0">
+          <p class="eyebrow">Review</p>
+          <h3 class="mt-2 text-xl font-bold tracking-tight">Redlines down to the word</h3>
+          <p class="mt-2 max-w-md text-sm text-muted">Real tracked changes with the author and date you choose, plus comments anchored to the exact paragraph. Accept or reject in one move.</p>
+        </div>
+        <div class="mt-5 overflow-hidden px-6"><img src="/showcase/crop-redline.webp" alt="A contract clause with a tracked change from thirty to forty-five days" width="2200" height="236" loading="lazy" class="w-full rounded-lg bg-white transition-transform duration-700 group-hover:scale-[1.03]" /></div>
+        <div class="px-6 pb-6 pt-4"><span class="chip">tracked change</span> <span class="chip">comment</span> <span class="chip">author · date</span></div>
+      </article>
+      <article class="glass glass-glow reveal group overflow-hidden lg:col-span-2">
+        <div class="p-6 pb-0">
+          <p class="eyebrow">Tables</p>
+          <h3 class="mt-2 text-xl font-bold tracking-tight">Tables that obey</h3>
+          <p class="mt-2 max-w-md text-sm text-muted">Add, move and reshape rows and columns by ID. Headers, widths and styles stay exactly where they belong.</p>
+        </div>
+        <div class="mt-5 overflow-hidden px-6"><img src="/showcase/crop-table.webp" alt="A styled table with a navy header row" width="2200" height="680" loading="lazy" class="w-full rounded-t-lg bg-white transition-transform duration-700 group-hover:scale-[1.03]" /></div>
+      </article>
+      <article class="glass glass-glow reveal group relative overflow-hidden lg:col-span-2" style="--d:.08s">
+        <div class="p-6">
+          <p class="eyebrow">Compose</p>
+          <h3 class="mt-2 text-xl font-bold tracking-tight">A whole report in one call</h3>
+          <p class="mt-2 max-w-sm text-sm text-muted">Hand it Markdown. Get back a finished, styled document with a cover, tables, charts and callouts in place.</p>
+        </div>
+        <div class="relative mx-auto mt-2 h-56 w-full max-w-md">
+          {[['atlas-p1', -14, -88, 0], ['atlas-p3', 12, 80, 2], ['atlas-p2', 0, 0, 4]].map(([n, rot, x, z]) => (
+            <img src={`/showcase/${n}.webp`} alt="" width="1240" height="1605" loading="lazy" class="paper-shadow absolute left-1/2 top-2 w-44 rounded transition-transform duration-500 group-hover:translate-y-[-6px]" style={`transform: translateX(calc(-50% + ${x}px)) rotate(${rot}deg); z-index:${z}`} />
+          ))}
+        </div>
+      </article>
+      {features.map((f, i) => (
+        <article class="glass glass-glow reveal group p-6 transition-transform duration-300 hover:-translate-y-1" style={`--d:${(i % 4) * 0.07}s`}>
+          <div class="grid h-11 w-11 place-items-center rounded-xl border border-line-strong bg-white/5 text-[#c4b5fd] transition-all duration-300 group-hover:border-violet/70 group-hover:text-cyan group-hover:shadow-[0_0_28px_rgb(139_92_246/.5)]">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[f.icon]} />
+          </div>
+          <h3 class="mt-5 text-lg font-bold tracking-tight">{f.title}</h3>
+          <p class="mt-2 text-sm text-muted">{f.line}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- Ways in -->
+  <section class="wrap pt-32">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="eyebrow reveal">Three ways in</p>
+      <h2 class="display reveal mt-4 text-4xl sm:text-6xl" style="--d:.08s">One engine. <span class="grad-text">Every way you work.</span></h2>
+    </div>
+    <div class="mt-14 grid gap-5 lg:grid-cols-3">
+      <article class="glass glass-glow reveal flex flex-col p-6">
+        <p class="eyebrow">Start here</p>
+        <h3 class="mt-2 text-xl font-bold">MCP server</h3>
+        <p class="mt-2 text-sm text-muted">Plug it into Claude Desktop, Cursor, Windsurf, Claude Code or any MCP client. Sandboxed to the folders you list.</p>
+        <div class="mt-4"><CodeBlock code={mcpConfig} title="mcp config" lang="json" wrap /></div>
+        <a class="mt-auto pt-5 text-sm font-semibold text-[#ddd6fe] underline underline-offset-4" href="/connect">Set up your client →</a>
+      </article>
+      <article class="glass glass-glow reveal flex flex-col p-6" style="--d:.1s">
+        <p class="eyebrow">For pipelines</p>
+        <h3 class="mt-2 text-xl font-bold">Command line</h3>
+        <p class="mt-2 text-sm text-muted">Inspect, validate, batch-edit, sanitize and export from scripts and CI. Scriptable and repeatable.</p>
+        <div class="mt-4"><CodeBlock code={`npx -y ${pkg.cli.name} validate report.docx\nnpx -y ${pkg.cli.name} export report.docx --format pdf -o report.pdf`} title="shell" wrap /></div>
+        <a class="mt-auto pt-5 text-sm font-semibold text-[#ddd6fe] underline underline-offset-4" href="/connect#cli">Command line setup →</a>
+      </article>
+      <article class="glass glass-glow reveal flex flex-col p-6" style="--d:.2s">
+        <p class="eyebrow">For builders</p>
+        <h3 class="mt-2 text-xl font-bold">TypeScript engine</h3>
+        <p class="mt-2 text-sm text-muted">The library behind both. Parse, edit in batches and serialise from your own Node code.</p>
+        <div class="mt-4"><CodeBlock code={sdkCode} title="typescript" lang="ts" wrap /></div>
+        <a class="mt-auto pt-5 text-sm font-semibold text-[#ddd6fe] underline underline-offset-4" href="/connect#engine">Engine setup →</a>
+      </article>
+    </div>
+
+  </section>
+
+  <!-- Final CTA -->
+  <section class="relative isolate mt-32 overflow-hidden py-28">
+    <div class="aurora fade-y" style="opacity:.9"><i></i><i></i><i></i></div>
+    <div class="wrap relative z-10 text-center">
+      <h2 class="display reveal mx-auto max-w-4xl text-4xl sm:text-7xl">Give your agent <span class="grad-text">Word.</span></h2>
+      <p class="lede reveal mx-auto mt-6 max-w-xl" style="--d:.1s">One config entry. Try it on a copy of a real document and watch what changes.</p>
+      <div class="reveal mt-9 flex flex-wrap items-center justify-center gap-3" style="--d:.2s">
+        <a class="btn btn-primary" href="/connect">Connect your agent</a>
+        <a class="btn" href={site.github.url} rel="noopener">Star on GitHub</a>
+      </div>
+      <p class="reveal mt-6 text-xs text-subtle" style="--d:.3s">Source-available under the Business Source License 1.1. Free for individuals, schools, non-profits and small businesses.</p>
+    </div>
+  </section>
+</Base>

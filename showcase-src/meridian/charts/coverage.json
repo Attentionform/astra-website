@@ -1,0 +1,2 @@
+{ "chartType": "column", "title": "Revisit time, hours (before and after)", "categories": ["North Atlantic", "Mediterranean", "Gulf", "South China Sea", "Strait of Malacca"],
+  "series": [{ "name": "Today", "values": [18, 22, 26, 20, 24], "color": "94A3B8" }, { "name": "With Meridian", "values": [4, 5, 6, 4, 5], "color": "7C3AED" }] }

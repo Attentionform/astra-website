@@ -1,0 +1,58 @@
+---
+import Docs from '../../layouts/Docs.astro';
+import CodeBlock from '../../components/CodeBlock.astro';
+import facts from '../../data/site-facts.json';
+const cli = facts.packages.cli.name;
+const node = facts.packages.cli.node?.replace('>=', '') ?? '22.19';
+const ops = `[{"action":"replace","target":"3FC95CAC","text":"1. Executive Summary (Q4)"},
+ {"action":"insert","type":"paragraph","anchor":"3FC95CAC","position":"after","text":"Net revenue grew 24% year over year."}]`;
+---
+<Docs title="Quickstart" description="Create a Word document, read it, edit it by ID and validate it, using the ASTra command-line tool." page="/docs/quickstart">
+  <h1>Quickstart</h1>
+  <p class="lede">In about five minutes you will create a document, read its structure, change it, and see ASTra refuse an edit that cannot succeed. You only need a terminal.</p>
+
+  <h2>Before you start</h2>
+  <ul>
+    <li>Node.js {node} or newer. Check with <code>node --version</code>.</li>
+    <li>Nothing else to install: <code>npx</code> downloads ASTra the first time you run it.</li>
+    <li>Optional: LibreOffice, only for PDF export and page images.</li>
+  </ul>
+
+  <h2>1. Create a document</h2>
+  <div class="block"><CodeBlock code={`npx -y ${cli} create report.docx --template report`} title="shell" /></div>
+  <p>This writes <code>report.docx</code> using the built-in report template. Open it in Word if you like.</p>
+
+  <h2>2. Read its structure</h2>
+  <div class="block"><CodeBlock code={`npx -y ${cli} inspect report.docx --fidelity compact`} title="shell" /></div>
+  <p>You get one row per paragraph, with the node's <strong>ID</strong>, its style and its text:</p>
+  <div class="block"><CodeBlock lang="text" title="output" copy={false} code={`ID       | V | Path | Header | Style    | Text
+-------- | - | ---- | ------ | -------- | -----------------------------------------
+6C54C7A6 | 1 | Root |        | Title    | Q3 Executive Financial Performance Report
+2D12C310 | 1 | Root |        | Subtitle | Strategic Financial Analysis & Growth Projections
+3FC95CAC | 1 | Root |        | Heading1 | 1. Executive Summary`} /></div>
+  <p>The ID is how you point at a node. It does not depend on line numbers or character positions.</p>
+
+  <h2>3. Change it by ID</h2>
+  <p>Save this as <code>ops.json</code>. It renames the heading and adds a paragraph after it:</p>
+  <div class="block"><CodeBlock code={ops} title="ops.json" lang="json" /></div>
+  <div class="block"><CodeBlock code={`npx -y ${cli} batch report.docx ops.json`} title="shell" /></div>
+  <p>ASTra prints <code>BATCH OK</code> and the number of operations applied. Both operations apply, or neither does.</p>
+
+  <h2>4. Check it</h2>
+  <div class="block"><CodeBlock code={`npx -y ${cli} validate report.docx
+npx -y ${cli} search report.docx "revenue grew"`} title="shell" /></div>
+  <p><code>validate</code> prints <code>VALID</code> (exit code 0) or lists what is wrong (exit code 1). <code>search</code> finds text and prints the IDs of the nodes that contain it, ready to use in the next batch.</p>
+
+  <h2>5. See a failed edit change nothing</h2>
+  <p>This batch has a valid first operation and a second one that points at a node that does not exist:</p>
+  <div class="block"><CodeBlock code={`echo '[{"action":"replace","target":"3FC95CAC","text":"Changed"},{"action":"replace","target":"DOESNOTEXIST","text":"x"}]' \\
+  | npx -y ${cli} batch report.docx -`} title="shell" /></div>
+  <p>ASTra exits with code 1 and an <code>E_VALIDATION</code> error that ends with <em>Nothing was written</em>. The heading is not "Changed": the whole batch was rolled back and the file is untouched. The message also says how to recover, which is what lets an AI agent fix its own mistake.</p>
+
+  <h2>Next</h2>
+  <ul>
+    <li>Let an AI assistant do this for you: <a href="/connect">connect the MCP server</a>.</li>
+    <li>Understand what just happened: <a href="/docs/concepts">Core concepts</a>.</li>
+    <li>See what you can change: <a href="/docs/operations">Operations</a>.</li>
+  </ul>
+</Docs>

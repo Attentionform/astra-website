@@ -1,0 +1,361 @@
+{
+  "source": {
+    "commit": "04f1f84",
+    "server": "0.2.0"
+  },
+  "document": {
+    "title": "Atlas Robotics: Q3 2026 Board Report",
+    "markdownLines": 58,
+    "pages": 3,
+    "hashBefore": "e910274a1878",
+    "hashAfterRefusal": "e910274a1878",
+    "refusalWroteFile": false
+  },
+  "steps": [
+    {
+      "group": "build",
+      "title": "Create an empty document",
+      "tool": "new_document",
+      "args": {
+        "outPath": "/path/to/documents/atlas-board-report.docx",
+        "template": "blank",
+        "styleGuide": "atlas-style.md"
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "revision": 1
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "build",
+      "title": "Compose the whole report from Markdown",
+      "tool": "compose_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "markdown": "# Atlas Robotics: Q3 2026 Board Report\n\n## 1. Executive summary\n…(58 lines of Markdown: headings, a table, three charts, callouts, a footnote, a link, a code block)",
+        "allowedDir": "/path/to/documents",
+        "styleGuide": "atlas-style.md"
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "opCount": 37,
+        "appliedCount": 37,
+        "revision": 2,
+        "createdNodeIds": [
+          "md_0001",
+          "md_0002",
+          "md_0003",
+          "…20 more"
+        ]
+      },
+      "trimmed": true,
+      "note": "One call. Charts come from small JSON files, tables from Markdown, callouts from > [!TIP] blocks."
+    },
+    {
+      "group": "build",
+      "title": "Check the package against the schema",
+      "tool": "validate_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17"
+      },
+      "ok": true,
+      "response": {
+        "ok": true
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "build",
+      "title": "Look at the pages it made",
+      "tool": "visual_inspect",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "pages": [
+          1
+        ]
+      },
+      "ok": true,
+      "response": {
+        "ok": true
+      },
+      "trimmed": true,
+      "note": "The agent gets a rendered page back and can check its own layout."
+    },
+    {
+      "group": "build",
+      "title": "Save",
+      "tool": "save_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "outPath": "/path/to/documents/atlas-board-report.docx"
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "revision": 2,
+        "path": "/path/to/documents/atlas-board-report.docx"
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "edit",
+      "title": "Re-open the saved report",
+      "tool": "open_document",
+      "args": {
+        "path": "/path/to/documents/atlas-board-report.docx"
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "revision": 1
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "edit",
+      "title": "Read it as compact TOON",
+      "tool": "inspect_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "fidelity": "compact",
+        "maxTextLength": 60
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "revision": 1,
+        "fidelity": "compact",
+        "toonText": "> fidelity: lossy tier: compact\nID | V | Path | Header | Style | Text | Flags\n--- | --- | --- | --- | --- | --- | ---\n41E5F245 | 1 | Root |  | Heading1 | Atlas Robotics: Q3 2026 Board Report | \n6E34034E | 1 | Root |  | Heading2 | 1. Executive summary | \n2A8D004A | 1 | Root |  | body:L-1 | Revenue reached $14.2M in Q3, up 34.2% year over year, led b... | \nt_001 | 1 | Root |  | table:1x1 | r1c1 The board is asked to approve the $2.5M warehouse-visio... | [TBL]\n550B88F0 | 1 | Root |  | Heading2 | 2. Financial performance | \nt_002 | 1 | Root |  | table:6x4 | r1c1 Metric | r1c2 Q3 2025 | r1c3 Q3 2026 | r1c4 Change ; r2... | [TBL]\n58FD6E31 | 1 | Root |  | chart | [Chart columnStacked] Revenue by quarter ($M) | cats: Q4 202... | [IMG]\n56AC2CF6 | 1 | Root |  | chart | [Chart line] Operating margin (%) | cats: Q4 2025,Q1 2026,Q2... | [IMG]\n04DF062D | 1 | Root |  | Heading2 | 3. Where the revenue comes from | \n7C96ABA8 | 1 | Root |  | chart | [Chart doughnut] Q3 revenue mix | cats: Platform,Services,Li... | [IMG]\n6186E856 | 1 | Root |  | list:bullet:L0 | Platform subscriptions grew 41% and now carry 76% of revenue... | \n5A87D317 | 1 | Root |  | list:bullet:L0 | Services grew 17%, mostly onboarding for the Munich site. | \n483E9DAC | 1 | Root |  | list:bullet:L0 | Licences are flat and are being phased out of new contracts. | \nt_003 | 1 | Root |  | table:1x1 | r1c1 Customers who adopt the platform inside 30 days of inst... | [TBL]\n23BF6C69 | 1 | Root |  | Heading2 | 4. Risks | \nt_004 | 1 | Root |  | table:1x1 | r1c1 Two sensor suppliers account for 64% of bill-of-materia... | [TBL]\n357441D3 | 1 | Root |  | list:numbered:L0 | Supplier concentration in vision sensors. | \n6E6B3758 | 1 | Root |  | list:numbered:L0 | Dependence on the Munich reference site for four open enterp... | \n00E5E39C | 1 | Root |  | list:numbered:L0 | Currency exposure on euro-denominated contracts, now 38% of ... | \n6455D8BE | 1 | Root |  | Heading2 | 5. Decision requested | \n0A92E9F7 | 1 | Root |  | body:L-1 | Approve $2.5M for the warehouse-vision expansion. Details an... | [LNK]\n76D0E2E6 | 1 | Root |  | body:L-1 | Approve: warehouse-vision expansionAmount:  $2,500,000Deadli... | \n7923D6F8 | 1 | Root |  | body:L-1 |  | \n"
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "edit",
+      "title": "Change a table cell and add a callout",
+      "tool": "execute_batch",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "operations": [
+          {
+            "action": "table",
+            "operation": "updateCell",
+            "target": "t_002",
+            "rowIndex": 4,
+            "columnIndex": 2,
+            "text": "18"
+          },
+          {
+            "action": "callout",
+            "anchor": "00E5E39C",
+            "position": "after",
+            "theme": "rose",
+            "title": "Added by the agent",
+            "text": "Hedging policy review is scheduled for the November board meeting."
+          }
+        ]
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "appliedCount": 2,
+        "revision": 2,
+        "results": [
+          {
+            "index": 0,
+            "action": "table",
+            "createdNodeIds": []
+          },
+          {
+            "index": 1,
+            "action": "callout",
+            "createdNodeIds": [
+              "callout_829c8065"
+            ]
+          }
+        ]
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "edit",
+      "title": "Save",
+      "tool": "save_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "outPath": "/path/to/documents/atlas-board-report.edited.docx"
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "revision": 2
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "refuse",
+      "title": "The agent sets a colour that is not a colour",
+      "tool": "execute_batch",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "operations": [
+          {
+            "action": "style",
+            "target": "2A8D004A",
+            "color": "not-a-color"
+          }
+        ]
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "appliedCount": 1,
+        "revision": 2
+      },
+      "trimmed": true,
+      "note": "The edit is accepted into the working copy. The check happens at save."
+    },
+    {
+      "group": "refuse",
+      "title": "Save is refused by the validator",
+      "tool": "save_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "outPath": "/path/to/documents/blocked.docx"
+      },
+      "ok": false,
+      "response": {
+        "ok": false,
+        "code": "E_VALIDATION",
+        "message": "E_VALIDATION: save blocked: package invalid at /w:document[1]/w:body[1]/w:p[3]/w:r[8]/w:rPr[1]/w:color[1] (8 errors, showing first): The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:val' attribute is invalid - The value 'not-a-color' is not valid according to any of the memberTypes of the union.",
+        "remedy": "Fix the flagged operations (re-inspect TOON, correct hex/half-point/twips values) and retry save_document."
+      },
+      "trimmed": false,
+      "note": "Nothing was written to disk."
+    },
+    {
+      "group": "refuse",
+      "title": "The agent fixes it from the remedy",
+      "tool": "execute_batch",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "operations": [
+          {
+            "action": "style",
+            "target": "2A8D004A",
+            "color": "1E3A8A"
+          }
+        ]
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "appliedCount": 1,
+        "revision": 3
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "refuse",
+      "title": "Save succeeds",
+      "tool": "save_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "outPath": "/path/to/documents/fixed.docx"
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "revision": 3
+      },
+      "trimmed": true,
+      "note": null
+    },
+    {
+      "group": "rollback",
+      "title": "A batch where the third edit is wrong",
+      "tool": "execute_batch",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "rollbackOnError": true,
+        "operations": [
+          {
+            "action": "table",
+            "operation": "updateCell",
+            "target": "t_002",
+            "rowIndex": 1,
+            "columnIndex": 2,
+            "text": "$99M"
+          },
+          {
+            "action": "style",
+            "target": "2A8D004A",
+            "bold": true
+          },
+          {
+            "action": "replace",
+            "target": "DEADBEEF",
+            "text": "This node does not exist."
+          }
+        ]
+      },
+      "ok": false,
+      "response": {
+        "ok": false,
+        "code": "E_VALIDATION",
+        "message": "execute_batch failed: Error: Node DEADBEEF not found in AST",
+        "remedy": "Check if the target node ID is correct. Node ids are session-scoped and go stale after reopen/edit; re-read ids via inspect_document; locate current text with search_content, or append without an id via anchor:end."
+      },
+      "trimmed": false,
+      "note": null
+    },
+    {
+      "group": "rollback",
+      "title": "Check the document",
+      "tool": "inspect_document",
+      "args": {
+        "sessionId": "sess_7c1e4a52-2f3b-4d0e-9a61-0c5b8e2d4f17",
+        "fidelity": "compact",
+        "maxTextLength": 40
+      },
+      "ok": true,
+      "response": {
+        "ok": true,
+        "revision": 1,
+        "dirty": false
+      },
+      "trimmed": true,
+      "note": "Revision is unchanged and the document is clean: edits 1 and 2 were rolled back too."
+    }
+  ],
+  "readCost": {
+    "parts": 17,
+    "rawXmlChars": 14465,
+    "rawXmlTokensEst": 3807,
+    "toonChars": 3038,
+    "toonTokensEst": 800,
+    "toonRows": 23,
+    "toonSample": "ID | V | Path | Header | Style | Text | Flags\n--- | --- | --- | --- | --- | --- | ---\n41E5F245 | 1 | Root |  | Heading1 | Atlas Robotics: Q3 2026 Board Report | \n6E34034E | 1 | Root |  | Heading2 | 1. Executive summary | \n2A8D004A | 1 | Root |  | body:L-1 | Revenue reached $14.2M in Q3, up 34.2% year over year, led by platform subscriptions and the first full quarter...\nt_001 | 1 | Root |  | table:1x1 | r1c1 The board is asked to approve the $2.5M warehouse-vision expansion in section 5 before the 14 November close...\n550B88F0 | 1 | Root |  | Heading2 | 2. Financial performance | \nt_002 | 1 | Root |  | table:6x4 | r1c1 Metric | r1c2 Q3 2025 | r1c3 Q3 2026 | r1c4 Change ; r2c1 Revenue | r2c2 $10.6M | r2c3 $14.2M | r2c4 +34.2% ...\n58FD6E31 | 1 | Root |  | chart | [Chart columnStacked] Revenue by quarter ($M) | cats: Q4 2025,Q1 2026,Q2 2026,Q3 2026 | Platform: 6.1,7.4,8.9,10.8...\n56AC2CF6 | 1 | Root |  | chart | [Chart line] Operating margin (%) | cats: Q4 2025,Q1 2026,Q2 2026,Q3 2026 | Operating margin: 14.2,16.8,18.3,21.4 ...\n04DF062D | 1 | Root |  | Heading2 | 3. Where the revenue comes from | \n7C96ABA8 | 1 | Root |  | chart | [Chart doughnut] Q3 revenue mix | cats: Platform,Services,Licences | Share: 76,20,4 | [IMG]"
+  },
+  "images": {
+    "pages": [
+      "/demo/report-p1.webp",
+      "/demo/report-p2.webp",
+      "/demo/report-p3.webp"
+    ],
+    "edited": "/demo/report-edited-p3.webp"
+  },
+  "tokenNote": "Token counts are estimates: characters divided by 3.8."
+}
